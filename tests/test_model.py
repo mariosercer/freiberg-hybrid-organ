@@ -8,10 +8,11 @@ class TestModel(unittest.TestCase):
         r = Rank(rank_id=1, name="Gedackt 8'", num_pipes=56, first_midi_note=36,
                   package_id=458, main_folder="samples/ow/01_gedackt8/lang/haupt",
                   short_release_folder="samples/ow/01_gedackt8/kurz/haupt",
-                  pitch_harmonic_num=8)
+                  pitch_harmonic_num=8, windchest_division_code=2)
         self.assertEqual(r.rank_id, 1)
         self.assertEqual(r.num_pipes, 56)
         self.assertEqual(r.pitch_harmonic_num, 8)
+        self.assertEqual(r.windchest_division_code, 2)
 
     def test_stop_holds_expected_fields(self):
         s = Stop(stop_code=2001, name="Gedackt 8'", display_name="GEDACKT 8")

@@ -15,22 +15,34 @@ class TestWriter(unittest.TestCase):
         rank = Rank(rank_id=1, name="Sifflöt 1'", num_pipes=56, first_midi_note=36,
                     package_id=458, main_folder="samples/ow/07_sufflet1/lang/haupt",
                     short_release_folder="samples/ow/07_sufflet1/kurz/haupt",
-                    pitch_harmonic_num=64)
+                    pitch_harmonic_num=64, windchest_division_code=2)
         xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
                                    ranks=[rank], stopranks=[], required_packages=[])
         self.assertNotIn("/>", xml)
-        self.assertTrue("Sifflöt 1&apos;" in xml or "Sifflöt 1'" in xml)
+        # apostrophe is NOT one of the 4 CODM escape characters (& < > "),
+        # so it must appear raw, same as in Hauptwerk's own "St. Anne's" examples
+        self.assertIn("<Name>Sifflöt 1'</Name>", xml)
         self.assertIn(
             "<Samples_ShortNoteReleaseSampleFileFolderIfAny>samples/ow/07_sufflet1/kurz/haupt"
             "</Samples_ShortNoteReleaseSampleFileFolderIfAny>",
             xml,
         )
+        self.assertEqual(xml.count("WindSupply_DivisionCodeOfWindchest>2<"), 1)
+
+    def test_render_escapes_the_four_xml_special_characters_in_names(self):
+        rank = Rank(rank_id=1, name='A & B <C> "D"', num_pipes=56, first_midi_note=36,
+                    package_id=458, main_folder="x", short_release_folder=None,
+                    pitch_harmonic_num=8, windchest_division_code=2)
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
+                                   ranks=[rank], stopranks=[], required_packages=[])
+        self.assertIn("<Name>A &amp; B &lt;C&gt; &quot;D&quot;</Name>", xml)
+        self.assertNotIn("<Name>A & B <C> \"D\"</Name>", xml)
 
     def test_rendered_sample_folder_matches_case_sensitive_folder_on_disk(self):
         rank = Rank(rank_id=1, name="Sifflöt 1'", num_pipes=56, first_midi_note=36,
                     package_id=458, main_folder="samples/ow/07_sufflet1/lang/haupt",
                     short_release_folder="samples/ow/07_sufflet1/kurz/haupt",
-                    pitch_harmonic_num=64)
+                    pitch_harmonic_num=64, windchest_division_code=2)
         xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
                                    ranks=[rank], stopranks=[], required_packages=[])
         main_folder = re.search(

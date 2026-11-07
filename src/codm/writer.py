@@ -7,7 +7,7 @@ def _field(name, value):
     if value is None:
         text = ""
     elif isinstance(value, str):
-        text = escape(value)
+        text = escape(value, {'"': "&quot;"})
     else:
         text = str(value)
     return f"\t\t<{name}>{text}</{name}>"
@@ -204,7 +204,7 @@ def _rank_fields(r: Rank):
         ("Samples_RankBasePitch64ftHarmNumIfAssumedTunedToConcertPitch", 0),
         ("Position_LayoutOfPipesOnWindchestCode", 1),
         ("Position_RankDistanceFromListenerMetres", 1),
-        ("WindSupply_DivisionCodeOfWindchest", None),
+        ("WindSupply_DivisionCodeOfWindchest", r.windchest_division_code),
         ("WindSupply_MaxFlowRandomisationPct", 0),
         ("Amp_PipeMIDINoteNum036_LevelAdjustDecibels", 0),
         ("Amp_PipeMIDINoteNum096_LevelAdjustDecibels", 0),

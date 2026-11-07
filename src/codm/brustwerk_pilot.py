@@ -14,28 +14,65 @@ REQUIRED_PACKAGES = [
 ]
 
 # (stop name, source rank folder relative to the package root, pitch_harmonic_num)
-# pitch_harmonic_num = 64 / footage_in_feet. Nasat 3' (21.33) and Quinta 1 1/2'
-# (42.67) are not whole numbers for this footage - rounded here to the nearest
-# integer (21 and 43) as a placeholder. MUST be confirmed against Hauptwerk's
-# own "Other | Design tools | View Custom Organ Design Module ... format
-# documentation" before this file is treated as final - Claude has no tool to
-# drive that desktop app, so a human needs to check this.
+#
+# pitch_harmonic_num is NOT simply 64/footage_in_feet - mutation stops are
+# named after a traditional nominal footage that does not always match their
+# true acoustic pitch (e.g. a historic "Nasat 3'" is often really a 2-2/3'
+# mutation). The values below are measured directly from the `smpl` chunk of
+# each rank's 060-C.wav, as the frequency ratio to Gedackt 8' (reference
+# harmonic 8), confirmed against Hauptwerk's own ExampleCustomOrgan2 (which
+# uses harmonic 24 for "Nazard 2 2/3'" and 40 for "Tierce 1 3/5'" - the same
+# convention):
+#   Gedackt 8'=8, Principal 4'/Rohrfloete 4'=16, Nasat 3'=24, Octava 2'=32,
+#   Tertia 1 3/5'=40, Quinta 1 1/2'=48, Sifflöt 1'=64, Mixtur 3f (Cimbel II)=64
+# (Cimbel II sounds a full octave above Sifflöt 1', not the same pitch as
+# Octava 2' that 64/footage would suggest.)
 BRUSTWERK_STOPS = [
     ("Gedackt 8'", "samples/ow/01_gedackt8", 8),
     ("Principal 4'", "samples/ma/04_octava4", 16),
     ("Rohrflöte 4'", "samples/ow/02_rohrfloethe4", 16),
-    ("Nasat 3'", "samples/ow/03_nasat3", 21),
+    ("Nasat 3'", "samples/ow/03_nasat3", 24),
     ("Octava 2'", "samples/ow/04_octava2", 32),
     ("Tertia 1 3/5'", "samples/ow/05_tertia135", 40),
-    ("Quinta 1 1/2'", "samples/ow/06_quinta112", 43),
+    ("Quinta 1 1/2'", "samples/ow/06_quinta112", 48),
     ("Sifflöt 1'", "samples/ow/07_sufflet1", 64),
-    ("Mixtur 3f", "samples/ow/08_cimbel2f", 32),
+    ("Mixtur 3f", "samples/ow/08_cimbel2f", 64),
 ]
+
+# Hauptwerk's division/stop codes are fixed identities, not free labels:
+# DivisionCode 1=PEDAL, 2=GREAT (confirmed against the locally installed
+# ExampleCustomOrgan1/2). A single-manual pilot must be wired to GREAT (2),
+# not PEDAL (1). StopCode for a division's own stops follows
+# 2000 + (division_code-1)*100 + index (confirmed: GREAT's own example
+# stops are 2101-2106) - the 1xxx range is reserved for couplers.
+DIVISION_CODE = 2
+
+
+def _validate_rank_folder(package_root: Path, folder: str, num_pipes: int, first_midi_note: int):
+    """Check a rank's sample folder on disk: every path segment exists with
+    the exact case given (case-insensitive filesystems like macOS would
+    silently accept a wrong-case path that breaks on Windows/Linux), and the
+    `.wav` files form a contiguous MIDI note range of exactly `num_pipes`
+    notes starting at `first_midi_note`."""
+    current = package_root
+    for part in folder.split("/"):
+        entries = {p.name for p in current.iterdir()} if current.is_dir() else set()
+        if part not in entries:
+            raise ValueError(f"'{part}' (exact case) not found under {current}; available: {sorted(entries)}")
+        current = current / part
+
+    notes = sorted(int(p.name[:3]) for p in current.glob("*.wav"))
+    expected = list(range(first_midi_note, first_midi_note + num_pipes))
+    if notes != expected:
+        raise ValueError(
+            f"{current}: expected contiguous notes {expected[0]}-{expected[-1]} "
+            f"({num_pipes} files), found {notes}"
+        )
 
 
 def build_brustwerk_pilot(zoblitz_root: Path) -> str:
     division = Division(
-        division_code=1,
+        division_code=DIVISION_CODE,
         name="BRUSTWERK",
         short_name="Brustwerk",
         number_of_keys=NUM_PIPES,
@@ -47,16 +84,12 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
     stopranks = []
     for i, (name, folder, pitch_harmonic_num) in enumerate(BRUSTWERK_STOPS, start=1):
         rank_id = i
-        stop_code = 1000 + i
+        stop_code = 2000 + (DIVISION_CODE - 1) * 100 + i
         main_folder = f"{folder}/lang/haupt"
         short_release_folder = f"{folder}/kurz/haupt"
 
-        main_dir = zoblitz_root / main_folder
-        num_on_disk = len(list(main_dir.glob("*.wav"))) if main_dir.is_dir() else 0
-        if num_on_disk != NUM_PIPES:
-            raise ValueError(
-                f"{name}: expected {NUM_PIPES} samples in {main_dir}, found {num_on_disk}"
-            )
+        _validate_rank_folder(zoblitz_root, main_folder, NUM_PIPES, FIRST_MIDI_NOTE)
+        _validate_rank_folder(zoblitz_root, short_release_folder, NUM_PIPES, FIRST_MIDI_NOTE)
 
         ranks.append(
             Rank(
@@ -68,6 +101,7 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
                 main_folder=main_folder,
                 short_release_folder=short_release_folder,
                 pitch_harmonic_num=pitch_harmonic_num,
+                windchest_division_code=DIVISION_CODE,
             )
         )
         stops.append(

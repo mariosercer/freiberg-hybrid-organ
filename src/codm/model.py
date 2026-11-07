@@ -11,6 +11,7 @@ class Rank:
     main_folder: str
     short_release_folder: str | None
     pitch_harmonic_num: float
+    windchest_division_code: int
 
 
 @dataclass
