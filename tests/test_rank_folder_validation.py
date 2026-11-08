@@ -31,6 +31,20 @@ class TestRankFolderValidation(unittest.TestCase):
             with self.assertRaises(ValueError):
                 _validate_rank_folder(root, "ow/01_gedackt8/lang/haupt", num_pipes=56, first_midi_note=36)
 
+    def test_accepts_folder_with_extra_bis_alternate_take_files(self):
+        # Görlitz samples include "_bis" alternate-take files alongside the
+        # normal NNN-Note.wav files (e.g. "040-E_bis.wav") - these must be
+        # ignored when counting/validating the note range, not treated as
+        # extra or duplicate notes.
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = root / "pipes/HW/01-AB_grossoct8"
+            _make_notes(folder, 36, 93)
+            (folder / "040-E_bis.wav").write_bytes(b"")
+            (folder / "073-C#_bis.wav").write_bytes(b"")
+            # should not raise
+            _validate_rank_folder(root, "pipes/HW/01-AB_grossoct8", num_pipes=58, first_midi_note=36)
+
     def test_rejects_case_mismatched_folder_name(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
