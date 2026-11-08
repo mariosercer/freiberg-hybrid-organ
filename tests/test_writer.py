@@ -38,6 +38,19 @@ class TestWriter(unittest.TestCase):
         self.assertIn("<Name>A &amp; B &lt;C&gt; &quot;D&quot;</Name>", xml)
         self.assertNotIn("<Name>A & B <C> \"D\"</Name>", xml)
 
+    def test_render_applies_tuning_adjust_from_rank(self):
+        rank = Rank(rank_id=1, name="Test", num_pipes=56, first_midi_note=36,
+                    package_id=1, main_folder="x", short_release_folder=None,
+                    pitch_harmonic_num=8, windchest_division_code=2,
+                    tuning_adjust_semitones_036=-11.8, tuning_adjust_semitones_096=-11.8)
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
+                                   ranks=[rank], stopranks=[], required_packages=[])
+        self.assertIn(
+            "<Pitch_PipeMIDINoteNum036_TuningAdjustPercentSemitones>-11.8"
+            "</Pitch_PipeMIDINoteNum036_TuningAdjustPercentSemitones>",
+            xml,
+        )
+
     def test_rendered_sample_folder_matches_case_sensitive_folder_on_disk(self):
         rank = Rank(rank_id=1, name="Sifflöt 1'", num_pipes=56, first_midi_note=36,
                     package_id=458, main_folder="samples/ow/07_sufflet1/lang/haupt",
