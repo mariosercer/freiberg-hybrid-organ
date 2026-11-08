@@ -104,6 +104,24 @@ class TestBrustwerkPilot(unittest.TestCase):
             self.assertIn(int(stop_code_str), stop_codes)
             self.assertIn(int(rank_id_str), rank_ids)
 
+    def test_short_release_max_ms_still_set_after_model_extension(self):
+        # Regression guard: writer.py used to hardcode 200ms whenever a
+        # short_release_folder was set; that was replaced by an explicit
+        # Rank.short_release_max_ms field (needed for Görlitz, whose
+        # short-release thresholds vary per rank). Brustwerk must keep
+        # passing 200 explicitly or this value silently drops to 0.
+        xml = build_brustwerk_pilot(ZOBLITZ_ROOT)
+        rank_block = re.search(
+            r'<ObjectList ObjectType="rank">(.*?)</ObjectList>', xml, re.DOTALL
+        ).group(1)
+        values = re.findall(
+            r"<Samples_MaxNoteTimeMsForShortNoteReleaseSamplesIfAny>(\d+)"
+            r"</Samples_MaxNoteTimeMsForShortNoteReleaseSamplesIfAny>",
+            rank_block,
+        )
+        self.assertEqual(len(values), 9)
+        self.assertTrue(all(v == "200" for v in values))
+
 
 if __name__ == "__main__":
     unittest.main()

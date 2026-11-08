@@ -51,6 +51,39 @@ class TestWriter(unittest.TestCase):
             xml,
         )
 
+    def test_render_rank_with_separate_rel_and_medium_release_folders(self):
+        rank = Rank(rank_id=1, name="Grossoctava 8'", num_pipes=58, first_midi_note=36,
+                    package_id=1811, main_folder="pipes/HW/01-AB_grossoct8",
+                    short_release_folder="pipes/HW/01-AB_grossoct8/rel00200",
+                    pitch_harmonic_num=8, windchest_division_code=2,
+                    short_release_max_ms=200,
+                    medium_release_folder="pipes/HW/01-AB_grossoct8/rel00450",
+                    medium_release_max_ms=450,
+                    rel_release_folder="pipes/HW/01-AB_grossoct8/rel99999")
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
+                                   ranks=[rank], stopranks=[], required_packages=[])
+        self.assertIn(
+            "<Samples_RelSampleFileFolderIfRelSamplesStoredInSeparateFiles>"
+            "pipes/HW/01-AB_grossoct8/rel99999"
+            "</Samples_RelSampleFileFolderIfRelSamplesStoredInSeparateFiles>",
+            xml,
+        )
+        self.assertIn(
+            "<Samples_MediumNoteReleaseSampleFileFolderIfAny>pipes/HW/01-AB_grossoct8/rel00450"
+            "</Samples_MediumNoteReleaseSampleFileFolderIfAny>",
+            xml,
+        )
+        self.assertIn(
+            "<Samples_MaxNoteTimeMsForMediumNoteReleaseSamplesIfAny>450"
+            "</Samples_MaxNoteTimeMsForMediumNoteReleaseSamplesIfAny>",
+            xml,
+        )
+        self.assertIn(
+            "<Samples_MaxNoteTimeMsForShortNoteReleaseSamplesIfAny>200"
+            "</Samples_MaxNoteTimeMsForShortNoteReleaseSamplesIfAny>",
+            xml,
+        )
+
     def test_rendered_sample_folder_matches_case_sensitive_folder_on_disk(self):
         rank = Rank(rank_id=1, name="Sifflöt 1'", num_pipes=56, first_midi_note=36,
                     package_id=458, main_folder="samples/ow/07_sufflet1/lang/haupt",

@@ -14,6 +14,10 @@ class Rank:
     windchest_division_code: int
     tuning_adjust_semitones_036: float = 0.0
     tuning_adjust_semitones_096: float = 0.0
+    short_release_max_ms: int = 0
+    medium_release_folder: str | None = None
+    medium_release_max_ms: int = 0
+    rel_release_folder: str | None = None
 
 
 @dataclass

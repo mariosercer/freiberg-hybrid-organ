@@ -100,6 +100,7 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
                 package_id=PACKAGE_ID,
                 main_folder=main_folder,
                 short_release_folder=short_release_folder,
+                short_release_max_ms=200,
                 pitch_harmonic_num=pitch_harmonic_num,
                 windchest_division_code=DIVISION_CODE,
             )
