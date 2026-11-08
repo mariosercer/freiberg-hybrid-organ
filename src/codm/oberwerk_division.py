@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from src.codm.brustwerk_pilot import _validate_rank_folder
+from src.codm.goerlitz_paths import goerlitz_package_root
 from src.codm.model import Division, Rank, Stop, StopRank
 
 DIVISION_CODE = 3
@@ -52,8 +53,6 @@ OBERWERK_STOPS = [
     ("Krumbhorn 8'", 1812, "pipes/OW/01-AB_krumhorn8", 58, 36, 8, "rel00200", 200, "rel00460", 460, "rel99999"),
 ]
 
-GOERLITZ_PART_FOR_PACKAGE = {1812: 2, 1813: 3}
-
 # Wasselonne's short/medium/long folders carry no numeric ms threshold in
 # their names (unlike Görlitz's relNNNNN convention) - no vendor-documented
 # value exists, so these are reasonable defaults, not measurements.
@@ -67,15 +66,7 @@ WASSELONNE_STOPS = [
 ]
 
 
-def _goerlitz_package_root(goerlitz_extract_root: Path, package_id: int) -> Path:
-    part = GOERLITZ_PART_FOR_PACKAGE[package_id]
-    base = goerlitz_extract_root / f"Sonus paradisi Goerlitz Sonnenorgel Hauptwerk (Part {part})"
-    nested = base / "HauptwerkSampleSetsAndComponents" / "OrganInstallationPackages" / f"{package_id:06d}"
-    flat = base / f"{package_id:06d}"
-    return nested if nested.is_dir() else flat
-
-
-def build_oberwerk_division(goerlitz_extract_root: Path, wasselonne_root: Path):
+def build_oberwerk_division(goerlitz_extract_root: Path, wasselonne_root: Path, rank_id_base: int = 1):
     division = Division(
         division_code=DIVISION_CODE,
         name="OBERWERK",
@@ -90,10 +81,10 @@ def build_oberwerk_division(goerlitz_extract_root: Path, wasselonne_root: Path):
 
     for i, (name, pkg_id, folder, num_pipes, first_midi_note, harmonic,
             short_dir, short_ms, medium_dir, medium_ms, rel_dir) in enumerate(OBERWERK_STOPS, start=1):
-        rank_id = i
+        rank_id = rank_id_base + i - 1
         stop_code = 2000 + (DIVISION_CODE - 1) * 100 + i
 
-        pkg_root = _goerlitz_package_root(goerlitz_extract_root, pkg_id)
+        pkg_root = goerlitz_package_root(goerlitz_extract_root, pkg_id)
         short_release_folder = f"{folder}/{short_dir}"
         medium_release_folder = f"{folder}/{medium_dir}"
         rel_release_folder = f"{folder}/{rel_dir}"
@@ -119,11 +110,13 @@ def build_oberwerk_division(goerlitz_extract_root: Path, wasselonne_root: Path):
                      first_mapped_key=first_midi_note, num_mapped_keys=num_pipes)
         )
 
-    next_id = len(OBERWERK_STOPS) + 1
+    next_rank_id = rank_id_base + len(OBERWERK_STOPS)
+    next_stop_index = len(OBERWERK_STOPS) + 1
     for name, folder, num_pipes, first_midi_note, harmonic in WASSELONNE_STOPS:
-        rank_id = next_id
-        stop_code = 2000 + (DIVISION_CODE - 1) * 100 + rank_id
-        next_id += 1
+        rank_id = next_rank_id
+        stop_code = 2000 + (DIVISION_CODE - 1) * 100 + next_stop_index
+        next_rank_id += 1
+        next_stop_index += 1
 
         main_folder = f"{folder}/long"
         short_release_folder = f"{folder}/short"

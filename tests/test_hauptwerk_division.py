@@ -2,12 +2,10 @@ import re
 import unittest
 from pathlib import Path
 
+from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.hauptwerk_division import build_hauptwerk_division
 
-GOERLITZ_EXTRACT_ROOT = Path(
-    "/private/tmp/claude-501/-Users-pilepale-Documents-3D-metal-printing/"
-    "fc14fe8b-9442-46d1-bef9-2a24ff20ea02/scratchpad/goerlitz-extract"
-)
+GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
 WALTERSHAUSEN_ROOT = Path(
     "/Volumes/Samsung T7/Orgulje/Trost Waltershausen/OrganInstallationPackages"
 )
@@ -63,12 +61,12 @@ class TestHauptwerkDivision(unittest.TestCase):
         self.assertEqual(bordun.package_id, 255)
         # Waltershausen is documented at 466.8 Hz (spec-stated, not measured -
         # its samples are encrypted); correction = -12*log2(466.8/440)*100 cents
-        self.assertAlmostEqual(bordun.tuning_adjust_semitones_036, -102.36, places=1)
-        self.assertAlmostEqual(bordun.tuning_adjust_semitones_096, -102.36, places=1)
+        self.assertAlmostEqual(bordun.tuning_adjust_cents_036, -102.36, places=1)
+        self.assertAlmostEqual(bordun.tuning_adjust_cents_096, -102.36, places=1)
 
         # Görlitz's own ranks need no correction - they ARE the 440Hz reference
         principal = next(r for r in ranks if r.name == "Principal 8'")
-        self.assertEqual(principal.tuning_adjust_semitones_036, 0)
+        self.assertEqual(principal.tuning_adjust_cents_036, 0)
 
         package_ids = {p[0] for p in packages}
         self.assertEqual(package_ids, {1, 1811, 1812, 1813, 255})

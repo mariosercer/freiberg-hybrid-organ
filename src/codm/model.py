@@ -12,8 +12,8 @@ class Rank:
     short_release_folder: str | None
     pitch_harmonic_num: float
     windchest_division_code: int
-    tuning_adjust_semitones_036: float = 0.0
-    tuning_adjust_semitones_096: float = 0.0
+    tuning_adjust_cents_036: float = 0.0
+    tuning_adjust_cents_096: float = 0.0
     short_release_max_ms: int = 0
     medium_release_folder: str | None = None
     medium_release_max_ms: int = 0

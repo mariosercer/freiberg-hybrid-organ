@@ -42,7 +42,7 @@ class TestWriter(unittest.TestCase):
         rank = Rank(rank_id=1, name="Test", num_pipes=56, first_midi_note=36,
                     package_id=1, main_folder="x", short_release_folder=None,
                     pitch_harmonic_num=8, windchest_division_code=2,
-                    tuning_adjust_semitones_036=-11.8, tuning_adjust_semitones_096=-11.8)
+                    tuning_adjust_cents_036=-11.8, tuning_adjust_cents_096=-11.8)
         xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
                                    ranks=[rank], stopranks=[], required_packages=[])
         self.assertIn(

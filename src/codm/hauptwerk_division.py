@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from src.codm.brustwerk_pilot import _validate_rank_folder
+from src.codm.goerlitz_paths import goerlitz_package_root
 from src.codm.model import Division, Rank, Stop, StopRank
 
 DIVISION_CODE = 2
@@ -77,18 +78,8 @@ HAUPTWERK_STOPS = [
     ("Clarin 4'", 1813, "pipes/HW/01-AB_clarin4", 58, 36, 16, "rel00220", 220, "rel00460", 460, "rel99999"),
 ]
 
-GOERLITZ_PART_FOR_PACKAGE = {1811: 1, 1812: 2, 1813: 3}
 
-
-def _goerlitz_package_root(goerlitz_extract_root: Path, package_id: int) -> Path:
-    part = GOERLITZ_PART_FOR_PACKAGE[package_id]
-    base = goerlitz_extract_root / f"Sonus paradisi Goerlitz Sonnenorgel Hauptwerk (Part {part})"
-    nested = base / "HauptwerkSampleSetsAndComponents" / "OrganInstallationPackages" / f"{package_id:06d}"
-    flat = base / f"{package_id:06d}"
-    return nested if nested.is_dir() else flat
-
-
-def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Path):
+def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Path, rank_id_base: int = 1):
     division = Division(
         division_code=DIVISION_CODE,
         name="HAUPTWERK",
@@ -103,10 +94,10 @@ def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Pa
 
     for i, (name, pkg_id, folder, num_pipes, first_midi_note, harmonic,
             short_dir, short_ms, medium_dir, medium_ms, rel_dir) in enumerate(HAUPTWERK_STOPS, start=1):
-        rank_id = i
+        rank_id = rank_id_base + i - 1
         stop_code = 2000 + (DIVISION_CODE - 1) * 100 + i
 
-        pkg_root = _goerlitz_package_root(goerlitz_extract_root, pkg_id)
+        pkg_root = goerlitz_package_root(goerlitz_extract_root, pkg_id)
         short_release_folder = f"{folder}/{short_dir}"
         medium_release_folder = f"{folder}/{medium_dir}"
         rel_release_folder = f"{folder}/{rel_dir}"
@@ -147,8 +138,9 @@ def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Pa
     bordun_folder = "HW-PortunUntersatz16"
     bordun_num_pipes = 54
     bordun_first_note = 36
-    bordun_rank_id = len(HAUPTWERK_STOPS) + 1
-    bordun_stop_code = 2000 + (DIVISION_CODE - 1) * 100 + bordun_rank_id
+    bordun_rank_id = rank_id_base + len(HAUPTWERK_STOPS)
+    bordun_stop_index = len(HAUPTWERK_STOPS) + 1
+    bordun_stop_code = 2000 + (DIVISION_CODE - 1) * 100 + bordun_stop_index
 
     _validate_rank_folder(waltershausen_root / f"{WALTERSHAUSEN_PACKAGE_ID:06d}", bordun_folder,
                            bordun_num_pipes, bordun_first_note)
@@ -164,8 +156,8 @@ def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Pa
             short_release_folder=None,
             pitch_harmonic_num=4,
             windchest_division_code=DIVISION_CODE,
-            tuning_adjust_semitones_036=WALTERSHAUSEN_TUNING_ADJUST_CENTS,
-            tuning_adjust_semitones_096=WALTERSHAUSEN_TUNING_ADJUST_CENTS,
+            tuning_adjust_cents_036=WALTERSHAUSEN_TUNING_ADJUST_CENTS,
+            tuning_adjust_cents_096=WALTERSHAUSEN_TUNING_ADJUST_CENTS,
         )
     )
     stops.append(Stop(stop_code=bordun_stop_code, name="Bordun 16'", display_name="BORDUN 16"))

@@ -1,12 +1,10 @@
 import unittest
 from pathlib import Path
 
+from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.oberwerk_division import build_oberwerk_division
 
-GOERLITZ_EXTRACT_ROOT = Path(
-    "/private/tmp/claude-501/-Users-pilepale-Documents-3D-metal-printing/"
-    "fc14fe8b-9442-46d1-bef9-2a24ff20ea02/scratchpad/goerlitz-extract"
-)
+GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
 WASSELONNE_ROOT = Path(
     "/Volumes/Samsung T7/Orgulje/Silbermann Wasselonne/OrganInstallationPackages/000802"
 )
@@ -51,10 +49,18 @@ class TestOberwerkDivision(unittest.TestCase):
         self.assertEqual(echo.first_midi_note, 60)
         self.assertEqual(echo.num_pipes, 25)
         self.assertEqual(echo.package_id, 802)
+        # Review Focus #4: "long" (the only tier with cue+loop points,
+        # measured separately) must be the MAIN folder, not short/medium.
+        self.assertEqual(echo.main_folder, "EchoCornet/long")
+        self.assertEqual(echo.short_release_folder, "EchoCornet/short")
+        self.assertEqual(echo.medium_release_folder, "EchoCornet/medium")
 
         vox = next(r for r in ranks if r.name == "Vox humana 8'")
         self.assertEqual(vox.first_midi_note, 36)
         self.assertEqual(vox.num_pipes, 49)
+        self.assertEqual(vox.main_folder, "GoVoixHumaine8/long")
+        self.assertEqual(vox.short_release_folder, "GoVoixHumaine8/short")
+        self.assertEqual(vox.medium_release_folder, "GoVoixHumaine8/medium")
 
         package_ids = {p[0] for p in packages}
         self.assertEqual(package_ids, {1, 1812, 1813, 802})
@@ -69,8 +75,8 @@ class TestOberwerkDivision(unittest.TestCase):
         _, ranks, _, _, _ = build_oberwerk_division(GOERLITZ_EXTRACT_ROOT, WASSELONNE_ROOT)
         for name in ["Echo 5f", "Vox humana 8'"]:
             r = next(r for r in ranks if r.name == name)
-            self.assertEqual(r.tuning_adjust_semitones_036, 0)
-            self.assertEqual(r.tuning_adjust_semitones_096, 0)
+            self.assertEqual(r.tuning_adjust_cents_036, 0)
+            self.assertEqual(r.tuning_adjust_cents_096, 0)
 
 
 if __name__ == "__main__":

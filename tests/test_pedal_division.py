@@ -2,12 +2,10 @@ import re
 import unittest
 from pathlib import Path
 
+from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.pedal_division import build_pedal_division
 
-GOERLITZ_EXTRACT_ROOT = Path(
-    "/private/tmp/claude-501/-Users-pilepale-Documents-3D-metal-printing/"
-    "fc14fe8b-9442-46d1-bef9-2a24ff20ea02/scratchpad/goerlitz-extract"
-)
+GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
 
 
 @unittest.skipUnless(GOERLITZ_EXTRACT_ROOT.is_dir(), "Görlitz scratch extraction not present")

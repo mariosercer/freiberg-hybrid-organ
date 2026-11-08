@@ -1,7 +1,9 @@
 from pathlib import Path
 
+from src.codm.brustwerk_pilot import CHORTON_TUNING_ADJUST_CENTS
 from src.codm.brustwerk_pilot import PACKAGE_ID as ZOBLITZ_PACKAGE_ID
 from src.codm.brustwerk_pilot import build_brustwerk_division
+from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.hauptwerk_division import build_hauptwerk_division
 from src.codm.model import Coupler, Tremulant
 from src.codm.oberwerk_division import build_oberwerk_division
@@ -10,10 +12,7 @@ from src.codm.writer import render_custom_organ
 
 ORGAN_ID = 800200
 
-GOERLITZ_EXTRACT_ROOT = Path(
-    "/private/tmp/claude-501/-Users-pilepale-Documents-3D-metal-printing/"
-    "fc14fe8b-9442-46d1-bef9-2a24ff20ea02/scratchpad/goerlitz-extract"
-)
+GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
 WALTERSHAUSEN_ROOT = Path("/Volumes/Samsung T7/Orgulje/Trost Waltershausen/OrganInstallationPackages")
 WASSELONNE_ROOT = Path("/Volumes/Samsung T7/Orgulje/Silbermann Wasselonne/OrganInstallationPackages/000802")
 ZOBLITZ_ROOT = Path("/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458")
@@ -55,8 +54,9 @@ OBERWERK_TREM_RANKS = {
 # Brustwerk (Zöblitz) tremulant waveform folders - confirmed present under
 # tremulantTemplates/<bare-name>/haupt (a different root than the rank's own
 # samples/<bare-name>/lang|kurz/haupt folder, with no numeric "01_"-style
-# prefix). Gedackt 8' has no tremulant template in this sample set.
+# prefix). All 9 Brustwerk ranks have a matching template folder.
 BRUSTWERK_TREM_FOLDERS = {
+    "Gedackt 8'": "tremulantTemplates/ow/gedackt8/haupt",
     "Principal 4'": "tremulantTemplates/ma/octava4/haupt",
     "Rohrflöte 4'": "tremulantTemplates/ow/rohrfloethe4/haupt",
     "Nasat 3'": "tremulantTemplates/ow/nasat3/haupt",
@@ -93,17 +93,25 @@ def _dedupe_packages(packages):
 
 
 def build_full_organ() -> str:
+    # RankID must be globally unique across all 4 divisions when merged
+    # (CODM identifies Rank objects by this code alone - confirmed in
+    # Hauptwerk's own CODM format guide, p.8: "No two objects of a given
+    # type can have the same code"). Each division module numbers its own
+    # ranks starting at 1 by default (for standalone use/tests); give each
+    # a distinct 100-wide base here, following the same per-division-code
+    # spacing as StopCode, well clear of any division's rank count (max 13).
+    ped_division, ped_ranks, ped_stops, ped_stopranks, ped_packages = build_pedal_division(
+        GOERLITZ_EXTRACT_ROOT, rank_id_base=1
+    )
     hw_division, hw_ranks, hw_stops, hw_stopranks, hw_packages = build_hauptwerk_division(
-        GOERLITZ_EXTRACT_ROOT, WALTERSHAUSEN_ROOT
+        GOERLITZ_EXTRACT_ROOT, WALTERSHAUSEN_ROOT, rank_id_base=101
     )
     ow_division, ow_ranks, ow_stops, ow_stopranks, ow_packages = build_oberwerk_division(
-        GOERLITZ_EXTRACT_ROOT, WASSELONNE_ROOT
+        GOERLITZ_EXTRACT_ROOT, WASSELONNE_ROOT, rank_id_base=201
     )
     bw_division, bw_ranks, bw_stops, bw_stopranks, bw_packages = build_brustwerk_division(
-        ZOBLITZ_ROOT, division_code=DIVISION_CODE_BRUSTWERK
-    )
-    ped_division, ped_ranks, ped_stops, ped_stopranks, ped_packages = build_pedal_division(
-        GOERLITZ_EXTRACT_ROOT
+        ZOBLITZ_ROOT, division_code=DIVISION_CODE_BRUSTWERK, rank_id_base=301,
+        tuning_adjust_cents=CHORTON_TUNING_ADJUST_CENTS,
     )
 
     _wire_oberwerk_tremulant(ow_ranks)

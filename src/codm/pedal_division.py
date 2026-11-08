@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from src.codm.brustwerk_pilot import _validate_rank_folder
+from src.codm.goerlitz_paths import goerlitz_package_root
 from src.codm.model import Division, Rank, Stop, StopRank
 
 DIVISION_CODE = 1
@@ -57,20 +58,9 @@ UNTERSATZ_RANKS = [
      "rel00200", 200, "rel00440", 440, "rel99999", 4),
 ]
 
-GOERLITZ_PART_FOR_PACKAGE = {1811: 1, 1812: 2, 1813: 3, 1814: 4}
-
-
-def _goerlitz_package_root(goerlitz_extract_root: Path, package_id: int) -> Path:
-    part = GOERLITZ_PART_FOR_PACKAGE[package_id]
-    base = goerlitz_extract_root / f"Sonus paradisi Goerlitz Sonnenorgel Hauptwerk (Part {part})"
-    nested = base / "HauptwerkSampleSetsAndComponents" / "OrganInstallationPackages" / f"{package_id:06d}"
-    flat = base / f"{package_id:06d}"
-    return nested if nested.is_dir() else flat
-
-
 def _make_rank(goerlitz_extract_root, rank_id, name, pkg_id, folder,
                short_dir, short_ms, medium_dir, medium_ms, rel_dir, harmonic):
-    pkg_root = _goerlitz_package_root(goerlitz_extract_root, pkg_id)
+    pkg_root = goerlitz_package_root(goerlitz_extract_root, pkg_id)
     short_release_folder = f"{folder}/{short_dir}"
     medium_release_folder = f"{folder}/{medium_dir}"
     rel_release_folder = f"{folder}/{rel_dir}"
@@ -90,7 +80,7 @@ def _make_rank(goerlitz_extract_root, rank_id, name, pkg_id, folder,
     )
 
 
-def build_pedal_division(goerlitz_extract_root: Path):
+def build_pedal_division(goerlitz_extract_root: Path, rank_id_base: int = 1):
     division = Division(
         division_code=DIVISION_CODE,
         name="PEDAL",
@@ -102,7 +92,7 @@ def build_pedal_division(goerlitz_extract_root: Path):
     ranks = []
     stops = []
     stopranks = []
-    rank_id = 1
+    rank_id = rank_id_base
     stop_index = 1
 
     # Untersatz 32'+16': one Stop, two Ranks/StopRanks.

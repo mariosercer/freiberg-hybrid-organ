@@ -147,11 +147,28 @@ class TestBrustwerkPilot(unittest.TestCase):
         # is read as hundredths of a semitone (cents), so the correction is
         # -1.1145 * 100 = -111.45, applied flat across the compass (same value
         # at note 036 and 096, since the whole set is one consistent pressing).
-        _, ranks, _, _, _ = build_brustwerk_division(ZOBLITZ_ROOT, division_code=4)
+        # tuning_adjust_cents must be passed explicitly - it is NOT automatic,
+        # because the standalone pilot organ (build_brustwerk_pilot) has
+        # nothing to harmonize against and must stay uncorrected (see
+        # test_build_brustwerk_pilot_stays_uncorrected below).
         expected = -111.45
+        _, ranks, _, _, _ = build_brustwerk_division(ZOBLITZ_ROOT, division_code=4,
+                                                       tuning_adjust_cents=expected)
         for r in ranks:
-            self.assertAlmostEqual(r.tuning_adjust_semitones_036, expected, places=1)
-            self.assertAlmostEqual(r.tuning_adjust_semitones_096, expected, places=1)
+            self.assertAlmostEqual(r.tuning_adjust_cents_036, expected, places=1)
+            self.assertAlmostEqual(r.tuning_adjust_cents_096, expected, places=1)
+
+    def test_build_brustwerk_pilot_stays_uncorrected(self):
+        # The standalone pilot organ (not merged with anything) must NOT
+        # inherit the hybrid's Chorton correction - there is nothing for it
+        # to harmonize against, so it should keep playing at its own native
+        # pitch, same as when it was first built and reviewed.
+        xml = build_brustwerk_pilot(ZOBLITZ_ROOT)
+        self.assertIn(
+            "<Pitch_PipeMIDINoteNum036_TuningAdjustPercentSemitones>0.0</Pitch_PipeMIDINoteNum036_TuningAdjustPercentSemitones>",
+            xml,
+        )
+        self.assertNotIn("-111.45", xml)
 
 
 if __name__ == "__main__":

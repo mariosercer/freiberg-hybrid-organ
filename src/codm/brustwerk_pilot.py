@@ -87,7 +87,8 @@ def _validate_rank_folder(package_root: Path, folder: str, num_pipes: int, first
         )
 
 
-def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_CODE):
+def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_CODE, rank_id_base: int = 1,
+                              tuning_adjust_cents: float = 0.0):
     division = Division(
         division_code=division_code,
         name="BRUSTWERK",
@@ -100,7 +101,7 @@ def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_C
     stops = []
     stopranks = []
     for i, (name, folder, pitch_harmonic_num) in enumerate(BRUSTWERK_STOPS, start=1):
-        rank_id = i
+        rank_id = rank_id_base + i - 1
         stop_code = 2000 + (division_code - 1) * 100 + i
         main_folder = f"{folder}/lang/haupt"
         short_release_folder = f"{folder}/kurz/haupt"
@@ -120,8 +121,8 @@ def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_C
                 short_release_max_ms=200,
                 pitch_harmonic_num=pitch_harmonic_num,
                 windchest_division_code=division_code,
-                tuning_adjust_semitones_036=CHORTON_TUNING_ADJUST_CENTS,
-                tuning_adjust_semitones_096=CHORTON_TUNING_ADJUST_CENTS,
+                tuning_adjust_cents_036=tuning_adjust_cents,
+                tuning_adjust_cents_096=tuning_adjust_cents,
             )
         )
         stops.append(
