@@ -2,8 +2,10 @@ import re
 import unittest
 from pathlib import Path
 
+from src.codm.console_layout import console_size
 from src.codm.full_organ import build_full_organ
 from src.codm.goerlitz_paths import default_goerlitz_extract_root
+from src.codm.model import Division
 
 GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
 
@@ -78,6 +80,86 @@ class TestFullOrgan(unittest.TestCase):
         self.assertEqual(len(chorton), 9, "all 9 Brustwerk ranks must carry the Chorton correction")
         self.assertEqual(len(waltershausen), 1, "Bordun 16' must carry the Waltershausen correction")
         self.assertEqual(len(zero), 35, "every Görlitz and Wasselonne rank must stay uncorrected")
+
+    def test_console_graphics_wired_for_all_elements(self):
+        xml = build_full_organ()
+
+        stop_block = re.search(r'<ObjectList ObjectType="stop">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+        coupler_block = re.search(r'<ObjectList ObjectType="coupler">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+        tremulant_block = re.search(r'<ObjectList ObjectType="tremulant">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+        division_block = re.search(r'<ObjectList ObjectType="division">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+        general_block = re.search(r'<ObjectList ObjectType="_general">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+
+        control_positions = {}
+        for block, count, prefix, code_tag in [
+            (stop_block, 44, "stop", "StopCode"),
+            (coupler_block, 6, "coupler", "CouplerCode"),
+            (tremulant_block, 2, "tremulant", "TremulantCode"),
+        ]:
+            objs = re.findall(r"<(?:stop|coupler|tremulant)>(.*?)</(?:stop|coupler|tremulant)>", block, re.DOTALL)
+            self.assertEqual(len(objs), count, f"expected {count} {prefix} objects")
+            for obj in objs:
+                code = re.search(rf"<{code_tag}>(\d+)</{code_tag}>", obj).group(1)
+                page_id = re.search(r"<CustomDisplay1_DisplayPageID>(\d*)</CustomDisplay1_DisplayPageID>", obj).group(1)
+                style_id = re.search(r"<CustomDisplay1_ControlStyleID>(\d*)</CustomDisplay1_ControlStyleID>", obj).group(1)
+                x = re.search(r"<CustomDisplay1_PosPixels_X>(\d*)</CustomDisplay1_PosPixels_X>", obj).group(1)
+                y = re.search(r"<CustomDisplay1_PosPixels_Y>(\d*)</CustomDisplay1_PosPixels_Y>", obj).group(1)
+                self.assertEqual(page_id, "1", f"{prefix}:{code} missing CustomDisplay1_DisplayPageID")
+                self.assertEqual(style_id, "1", f"{prefix}:{code} missing CustomDisplay1_ControlStyleID")
+                control_positions[f"{prefix}:{code}"] = (int(x), int(y))
+
+        division_objs = re.findall(r"<division>(.*?)</division>", division_block, re.DOTALL)
+        self.assertEqual(len(division_objs), 4)
+
+        divisions = []
+        keyboard_anchors = {}
+        for obj in division_objs:
+            division_code = int(re.search(r"<DivisionCode>(\d+)</DivisionCode>", obj).group(1))
+            number_of_keys = int(re.search(r"<NumberOfKeys>(\d+)</NumberOfKeys>", obj).group(1))
+            first_key = int(re.search(r"<MIDINoteNumOfFirstKey>(\d+)</MIDINoteNumOfFirstKey>", obj).group(1))
+            keyboard_page_id = re.search(
+                r"<CustomDisplay1_Keyboard_DisplayPageID>(\d*)</CustomDisplay1_Keyboard_DisplayPageID>", obj
+            ).group(1)
+            keyboard_style_id = re.search(
+                r"<CustomDisplay1_Keyboard_KeyboardStyleID>(\d*)</CustomDisplay1_Keyboard_KeyboardStyleID>", obj
+            ).group(1)
+            keyboard_x = int(
+                re.search(r"<CustomDisplay1_Keyboard_PosPixels_X>(\d*)</CustomDisplay1_Keyboard_PosPixels_X>", obj).group(1)
+            )
+            keyboard_y = int(
+                re.search(r"<CustomDisplay1_Keyboard_PosPixels_Y>(\d*)</CustomDisplay1_Keyboard_PosPixels_Y>", obj).group(1)
+            )
+
+            self.assertEqual(keyboard_page_id, "1", f"division {division_code} missing keyboard DisplayPageID")
+            expected_style = "2" if division_code == 1 else "1"
+            self.assertEqual(keyboard_style_id, expected_style, f"division {division_code} wrong KeyboardStyleID")
+
+            divisions.append(Division(
+                division_code=division_code, name="x", short_name="x",
+                number_of_keys=number_of_keys, first_key_midi_note=first_key,
+            ))
+            keyboard_anchors[division_code] = (keyboard_x, keyboard_y)
+
+        declared_width = int(
+            re.search(r"<CustomDisplay_ConsoleWidthPixels>(\d+)</CustomDisplay_ConsoleWidthPixels>", general_block).group(1)
+        )
+        declared_height = int(
+            re.search(r"<CustomDisplay_ConsoleHeightPixels>(\d+)</CustomDisplay_ConsoleHeightPixels>", general_block).group(1)
+        )
+        declared_default_page = re.search(
+            r"<CustomDisplay_DefaultDisplayPageID>(\d*)</CustomDisplay_DefaultDisplayPageID>", general_block
+        ).group(1)
+        self.assertEqual(declared_default_page, "1")
+
+        expected_width, expected_height = console_size(control_positions, keyboard_anchors, divisions)
+        self.assertGreaterEqual(
+            declared_width, expected_width,
+            "declared console width smaller than the actual laid-out content",
+        )
+        self.assertGreaterEqual(
+            declared_height, expected_height,
+            "declared console height smaller than the actual laid-out content",
+        )
 
 
 if __name__ == "__main__":

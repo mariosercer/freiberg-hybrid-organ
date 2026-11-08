@@ -3,9 +3,10 @@ from pathlib import Path
 from src.codm.brustwerk_pilot import CHORTON_TUNING_ADJUST_CENTS
 from src.codm.brustwerk_pilot import PACKAGE_ID as ZOBLITZ_PACKAGE_ID
 from src.codm.brustwerk_pilot import build_brustwerk_division
+from src.codm.console_layout import console_size, controls_bottom_y, layout_controls, layout_keyboard_anchors
 from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.hauptwerk_division import build_hauptwerk_division
-from src.codm.model import Coupler, Tremulant
+from src.codm.model import ControlStyle, Coupler, DisplayPage, KeyboardStyle, Tremulant
 from src.codm.oberwerk_division import build_oberwerk_division
 from src.codm.pedal_division import build_pedal_division
 from src.codm.writer import render_custom_organ
@@ -18,6 +19,110 @@ WASSELONNE_ROOT = Path("/Volumes/Samsung T7/Orgulje/Silbermann Wasselonne/OrganI
 ZOBLITZ_ROOT = Path("/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458")
 
 DIVISION_CODE_BRUSTWERK = 4
+
+# Generic graphical console (user's explicit request: "generički izgled iz
+# Hauptwerkove biblioteke", single page) - every field below copied
+# verbatim from Hauptwerk's own ExampleCustomOrgan2/4.CustomOrgan_Hauptwerk_xml
+# (installed locally), confirmed by direct read, not invented.
+CONSOLE_DISPLAY_PAGE_ID = 1
+CONSOLE_CONTROL_STYLE_ID = 1
+CONSOLE_KEYBOARD_STYLE_ID_MANUAL = 1
+CONSOLE_KEYBOARD_STYLE_ID_PEDAL = 2
+
+CONSOLE_DISPLAY_PAGE = DisplayPage(
+    display_page_id=CONSOLE_DISPLAY_PAGE_ID,
+    name="Console",
+    background_filename="HauptwerkStandardImages/SeamlessBackgrounds-WoodPanelling-DarkCherry.png",
+)
+
+# ExampleCustomOrgan2 ControlStyleID=10 ("Drwkb07WoodSm/WhtTxt").
+CONSOLE_CONTROL_STYLE = ControlStyle(
+    control_style_id=CONSOLE_CONTROL_STYLE_ID,
+    name="Drwkb07WoodSm/WhtTxt",
+    clickable_right_x=65,
+    clickable_bottom_y=65,
+    mask_filename="HauptwerkStandardImages/Stop07-Drawknob-Wood-Small-Mask.bmp",
+    stage00_filename="HauptwerkStandardImages/Stop07-Drawknob-Wood-Small-Off.bmp",
+    stage01_filename="HauptwerkStandardImages/Stop07-Drawknob-Wood-Small-On.bmp",
+    font_height_pixels=8,
+    text_right_x=61,
+    text_bottom_y=61,
+)
+
+# ExampleCustomOrgan2 KeyboardStyleID=4 ("Man07IvorySm", KeyImageSet007).
+CONSOLE_KEYBOARD_STYLE_MANUAL = KeyboardStyle(
+    keyboard_style_id=CONSOLE_KEYBOARD_STYLE_ID_MANUAL,
+    name="Man07IvorySm",
+    cf_keydown="HauptwerkStandardImages/KeyImageSet007-Down-CF.bmp",
+    cf_keyup="HauptwerkStandardImages/KeyImageSet007-Up-CF.bmp",
+    cf_mask="HauptwerkStandardImages/KeyImageSet007-Mask-CF.bmp",
+    d_keydown="HauptwerkStandardImages/KeyImageSet007-Down-D.bmp",
+    d_keyup="HauptwerkStandardImages/KeyImageSet007-Up-D.bmp",
+    d_mask="HauptwerkStandardImages/KeyImageSet007-Mask-D.bmp",
+    eb_keydown="HauptwerkStandardImages/KeyImageSet007-Down-EB.bmp",
+    eb_keyup="HauptwerkStandardImages/KeyImageSet007-Up-EB.bmp",
+    eb_mask="HauptwerkStandardImages/KeyImageSet007-Mask-EB.bmp",
+    g_keydown="HauptwerkStandardImages/KeyImageSet007-Down-G.bmp",
+    g_keyup="HauptwerkStandardImages/KeyImageSet007-Up-G.bmp",
+    g_mask="HauptwerkStandardImages/KeyImageSet007-Mask-G.bmp",
+    a_keydown="HauptwerkStandardImages/KeyImageSet007-Down-A.bmp",
+    a_keyup="HauptwerkStandardImages/KeyImageSet007-Up-A.bmp",
+    a_mask="HauptwerkStandardImages/KeyImageSet007-Mask-A.bmp",
+    sharp_keydown="HauptwerkStandardImages/KeyImageSet007-Down-Sharp.bmp",
+    sharp_keyup="HauptwerkStandardImages/KeyImageSet007-Up-Sharp.bmp",
+    sharp_mask="",
+    wholenatural_keydown="HauptwerkStandardImages/KeyImageSet007-Down-WholeNatural.bmp",
+    wholenatural_keyup="HauptwerkStandardImages/KeyImageSet007-Up-WholeNatural.bmp",
+    wholenatural_mask="",
+    firstkeyda_keydown="HauptwerkStandardImages/KeyImageSet007-Down-FirstKeyDA.bmp",
+    firstkeyda_keyup="HauptwerkStandardImages/KeyImageSet007-Up-FirstKeyDA.bmp",
+    firstkeyda_mask="HauptwerkStandardImages/KeyImageSet007-Mask-FirstKeyDA.bmp",
+    firstkeyg_keydown="HauptwerkStandardImages/KeyImageSet007-Down-FirstKeyG.bmp",
+    firstkeyg_keyup="HauptwerkStandardImages/KeyImageSet007-Up-FirstKeyG.bmp",
+    firstkeyg_mask="HauptwerkStandardImages/KeyImageSet007-Mask-FirstKeyG.bmp",
+    lastkeydg_keydown="HauptwerkStandardImages/KeyImageSet007-Down-LastKeyDG.bmp",
+    lastkeydg_keyup="HauptwerkStandardImages/KeyImageSet007-Up-LastKeyDG.bmp",
+    lastkeydg_mask="HauptwerkStandardImages/KeyImageSet007-Mask-LastKeyDG.bmp",
+    lastkeya_keydown="HauptwerkStandardImages/KeyImageSet007-Down-LastKeyA.bmp",
+    lastkeya_keyup="HauptwerkStandardImages/KeyImageSet007-Up-LastKeyA.bmp",
+    lastkeya_mask="HauptwerkStandardImages/KeyImageSet007-Mask-LastKeyA.bmp",
+    horiz_natural=12, horiz_cf_sharp=8, horiz_da_sharp=10, horiz_g_sharp=9,
+    horiz_dg_from_cfsharp=4, horiz_eb_from_dasharp=2, horiz_a_from_gsharp=3,
+    clickable_natural_top_y=17, clickable_natural_right_x=12, clickable_natural_bottom_y=32,
+    clickable_sharp_right_x=6, clickable_sharp_bottom_y=17,
+)
+
+# ExampleCustomOrgan2 KeyboardStyleID=7 ("Ped06OldSm", KeyImageSet006).
+CONSOLE_KEYBOARD_STYLE_PEDAL = KeyboardStyle(
+    keyboard_style_id=CONSOLE_KEYBOARD_STYLE_ID_PEDAL,
+    name="Ped06OldSm",
+    cf_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightDown.bmp",
+    cf_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightUp.bmp",
+    d_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightDown.bmp",
+    d_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightUp.bmp",
+    eb_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightDown.bmp",
+    eb_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightUp.bmp",
+    g_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightDown.bmp",
+    g_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightUp.bmp",
+    a_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightDown.bmp",
+    a_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightUp.bmp",
+    sharp_keydown="HauptwerkStandardImages/KeyImageSet006-SharpDown.bmp",
+    sharp_keyup="HauptwerkStandardImages/KeyImageSet006-SharpUp.bmp",
+    wholenatural_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightDown.bmp",
+    wholenatural_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightUp.bmp",
+    firstkeyda_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightDown.bmp",
+    firstkeyda_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightUp.bmp",
+    firstkeyg_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightDown.bmp",
+    firstkeyg_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithSharpToTheRightUp.bmp",
+    lastkeydg_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightDown.bmp",
+    lastkeydg_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightUp.bmp",
+    lastkeya_keydown="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightDown.bmp",
+    lastkeya_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightUp.bmp",
+    horiz_natural=24, horiz_cf_sharp=12, horiz_da_sharp=12, horiz_g_sharp=12,
+    horiz_dg_from_cfsharp=12, horiz_eb_from_dasharp=12, horiz_a_from_gsharp=12,
+    clickable_natural_right_x=12, clickable_natural_bottom_y=70,
+    clickable_sharp_right_x=12, clickable_sharp_bottom_y=70,
+)
 
 # Confirmed empirically against Hauptwerk's own ExampleCustomOrgan2, which
 # uses the exact same division-code layout as this project (1=PEDAL,
@@ -123,6 +228,9 @@ def build_full_organ() -> str:
     stopranks = ped_stopranks + hw_stopranks + ow_stopranks + bw_stopranks
     required_packages = _dedupe_packages(ped_packages + hw_packages + ow_packages + bw_packages)
 
+    control_positions, keyboard_anchors = _wire_console_graphics(divisions, stops, COUPLERS, TREMULANTS)
+    console_width, console_height = console_size(control_positions, keyboard_anchors, divisions)
+
     return render_custom_organ(
         organ_id=ORGAN_ID,
         name="Freiberg Hybrid",
@@ -133,7 +241,42 @@ def build_full_organ() -> str:
         required_packages=required_packages,
         couplers=COUPLERS,
         tremulants=TREMULANTS,
+        control_styles=[CONSOLE_CONTROL_STYLE],
+        keyboard_styles=[CONSOLE_KEYBOARD_STYLE_MANUAL, CONSOLE_KEYBOARD_STYLE_PEDAL],
+        display_pages=[CONSOLE_DISPLAY_PAGE],
+        console_width=console_width,
+        console_height=console_height,
+        default_display_page_id=CONSOLE_DISPLAY_PAGE_ID,
     )
+
+
+def _wire_console_graphics(divisions, stops, couplers, tremulants):
+    control_positions = layout_controls(stops, couplers, tremulants)
+    anchors = layout_keyboard_anchors(controls_bottom_y(control_positions))
+
+    for s in stops:
+        s.display_page_id = CONSOLE_DISPLAY_PAGE_ID
+        s.control_style_id = CONSOLE_CONTROL_STYLE_ID
+        s.pos_x, s.pos_y = control_positions[f"stop:{s.stop_code}"]
+
+    for c in couplers:
+        c.display_page_id = CONSOLE_DISPLAY_PAGE_ID
+        c.control_style_id = CONSOLE_CONTROL_STYLE_ID
+        c.pos_x, c.pos_y = control_positions[f"coupler:{c.coupler_code}"]
+
+    for t in tremulants:
+        t.display_page_id = CONSOLE_DISPLAY_PAGE_ID
+        t.control_style_id = CONSOLE_CONTROL_STYLE_ID
+        t.pos_x, t.pos_y = control_positions[f"tremulant:{t.tremulant_code}"]
+
+    for d in divisions:
+        d.keyboard_display_page_id = CONSOLE_DISPLAY_PAGE_ID
+        d.keyboard_style_id = (
+            CONSOLE_KEYBOARD_STYLE_ID_PEDAL if d.division_code == 1 else CONSOLE_KEYBOARD_STYLE_ID_MANUAL
+        )
+        d.keyboard_pos_x, d.keyboard_pos_y = anchors[d.division_code]
+
+    return control_positions, anchors
 
 
 def main():

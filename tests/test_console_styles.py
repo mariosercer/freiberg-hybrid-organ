@@ -63,7 +63,8 @@ class TestConsoleStyles(unittest.TestCase):
             lastkeya_keyup="HauptwerkStandardImages/KeyImageSet006-NaturalWithNoSharpToTheRightUp.bmp",
             horiz_natural=24, horiz_cf_sharp=12, horiz_da_sharp=12, horiz_g_sharp=12,
             horiz_dg_from_cfsharp=12, horiz_eb_from_dasharp=12, horiz_a_from_gsharp=12,
-            clickable_natural_bottom_y=70, clickable_sharp_bottom_y=70,
+            clickable_natural_right_x=12, clickable_natural_bottom_y=70,
+            clickable_sharp_right_x=12, clickable_sharp_bottom_y=70,
         )
         xml = render_custom_organ(organ_id=800200, name="Test", divisions=[], stops=[],
                                    ranks=[], stopranks=[], required_packages=[],
