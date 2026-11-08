@@ -59,6 +59,19 @@ class TestOberwerkDivision(unittest.TestCase):
         package_ids = {p[0] for p in packages}
         self.assertEqual(package_ids, {1, 1812, 1813, 802})
 
+    def test_wasselonne_ranks_need_no_pitch_correction(self):
+        # Measured directly from smpl chunks: Wasselonne's EchoCornet and
+        # GoVoixHumaine8 (note 060) are within 0.004 semitones of Görlitz's
+        # 440Hz reference - measurement noise, not a real pitch-standard
+        # difference. Deliberately left uncorrected (tuning_adjust=0), unlike
+        # Zöblitz/Waltershausen - this is a documented finding, not an
+        # oversight someone should "fix" later.
+        _, ranks, _, _, _ = build_oberwerk_division(GOERLITZ_EXTRACT_ROOT, WASSELONNE_ROOT)
+        for name in ["Echo 5f", "Vox humana 8'"]:
+            r = next(r for r in ranks if r.name == name)
+            self.assertEqual(r.tuning_adjust_semitones_036, 0)
+            self.assertEqual(r.tuning_adjust_semitones_096, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

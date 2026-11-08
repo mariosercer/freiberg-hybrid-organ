@@ -48,6 +48,19 @@ BRUSTWERK_STOPS = [
 # stops are 2101-2106) - the 1xxx range is reserved for couplers.
 DIVISION_CODE = 2
 
+# Zöblitz is pitched at Chorton, measured +1.1145 semitones above Görlitz's
+# ~440 Hz reference (smpl chunk, Gedackt 8' note 060: 279.08 Hz vs Görlitz's
+# 261.68 Hz for "the same" key). Pitch_PipeMIDINoteNum036/096_TuningAdjust-
+# PercentSemitones is read as hundredths of a semitone (cents) - "a percent
+# of a semitone" is the standard definition of a cent - so the correction
+# is -1.1145 * 100 cents, applied flat across the whole compass since the
+# whole set is one consistent recording/pressing, not a per-note drift.
+# UNVERIFIED: whether Hauptwerk really expects cents here rather than raw
+# semitones could not be confirmed without opening Hauptwerk's own in-app
+# CODM format documentation (Other | Design tools | View ... format
+# documentation) - a human needs to check this before treating it as final.
+CHORTON_TUNING_ADJUST_CENTS = -111.45
+
 
 def _validate_rank_folder(package_root: Path, folder: str, num_pipes: int, first_midi_note: int):
     """Check a rank's sample folder on disk: every path segment exists with
@@ -107,6 +120,8 @@ def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_C
                 short_release_max_ms=200,
                 pitch_harmonic_num=pitch_harmonic_num,
                 windchest_division_code=division_code,
+                tuning_adjust_semitones_036=CHORTON_TUNING_ADJUST_CENTS,
+                tuning_adjust_semitones_096=CHORTON_TUNING_ADJUST_CENTS,
             )
         )
         stops.append(

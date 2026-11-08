@@ -140,6 +140,19 @@ class TestBrustwerkPilot(unittest.TestCase):
         for r in ranks:
             self.assertEqual(r.windchest_division_code, 4)
 
+    def test_all_ranks_corrected_from_chorton_to_440hz(self):
+        # Measured directly from smpl chunks: Zöblitz's Gedackt 8' (note 060)
+        # sounds at 279.08 Hz vs Görlitz's reference 261.68 Hz for the "same"
+        # key - a +1.1145 semitone Chorton offset. TuningAdjustPercentSemitones
+        # is read as hundredths of a semitone (cents), so the correction is
+        # -1.1145 * 100 = -111.45, applied flat across the compass (same value
+        # at note 036 and 096, since the whole set is one consistent pressing).
+        _, ranks, _, _, _ = build_brustwerk_division(ZOBLITZ_ROOT, division_code=4)
+        expected = -111.45
+        for r in ranks:
+            self.assertAlmostEqual(r.tuning_adjust_semitones_036, expected, places=1)
+            self.assertAlmostEqual(r.tuning_adjust_semitones_096, expected, places=1)
+
 
 if __name__ == "__main__":
     unittest.main()

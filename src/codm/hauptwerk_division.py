@@ -15,6 +15,14 @@ GOERLITZ_PACKAGES = {
 WALTERSHAUSEN_PACKAGE_ID = 255
 WALTERSHAUSEN_PACKAGE = ("OrganART 1730 Trost Package-000255-PatchV3.2", 3, "OrganArt Media", "3.300000")
 
+# Waltershausen is documented (user's spec) at 466.8 Hz, not measured - its
+# sample files are genuinely encrypted (confirmed: no RIFF/WAVE signature at
+# all), unlike every other source in this project. Correction uses the
+# documented Hz value, not a measurement: -12*log2(466.8/440) semitones,
+# in cents (hundredths of a semitone) per the same "PercentSemitones" = cents
+# reading used for Zöblitz's Chorton correction (see brustwerk_pilot.py).
+WALTERSHAUSEN_TUNING_ADJUST_CENTS = -102.36
+
 REQUIRED_PACKAGES = [
     (1, "Hauptwerk Standard Components", 1, "Milan Digital Audio", "4"),
 ] + [
@@ -156,6 +164,8 @@ def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Pa
             short_release_folder=None,
             pitch_harmonic_num=4,
             windchest_division_code=DIVISION_CODE,
+            tuning_adjust_semitones_036=WALTERSHAUSEN_TUNING_ADJUST_CENTS,
+            tuning_adjust_semitones_096=WALTERSHAUSEN_TUNING_ADJUST_CENTS,
         )
     )
     stops.append(Stop(stop_code=bordun_stop_code, name="Bordun 16'", display_name="BORDUN 16"))

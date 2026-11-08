@@ -61,6 +61,14 @@ class TestHauptwerkDivision(unittest.TestCase):
         self.assertEqual(bordun.first_midi_note, 36)
         self.assertEqual(bordun.num_pipes, 54)
         self.assertEqual(bordun.package_id, 255)
+        # Waltershausen is documented at 466.8 Hz (spec-stated, not measured -
+        # its samples are encrypted); correction = -12*log2(466.8/440)*100 cents
+        self.assertAlmostEqual(bordun.tuning_adjust_semitones_036, -102.36, places=1)
+        self.assertAlmostEqual(bordun.tuning_adjust_semitones_096, -102.36, places=1)
+
+        # Görlitz's own ranks need no correction - they ARE the 440Hz reference
+        principal = next(r for r in ranks if r.name == "Principal 8'")
+        self.assertEqual(principal.tuning_adjust_semitones_036, 0)
 
         package_ids = {p[0] for p in packages}
         self.assertEqual(package_ids, {1, 1811, 1812, 1813, 255})
