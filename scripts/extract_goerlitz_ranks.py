@@ -19,6 +19,10 @@ import sys
 import zipfile
 from pathlib import Path
 
+# Allow running as `python3 scripts/extract_goerlitz_ranks.py` from the repo
+# root without needing PYTHONPATH=. set first.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 ZIP_DIR = Path("/Volumes/Samsung T7/Orgulje/Sonus paradisi Goerlitz Sonnenorgel")
 
 # (zip part, package_id, division, rank_folder_name) - casing verified
