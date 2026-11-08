@@ -45,6 +45,22 @@ class TestRankFolderValidation(unittest.TestCase):
             # should not raise
             _validate_rank_folder(root, "pipes/HW/01-AB_grossoct8", num_pipes=58, first_midi_note=36)
 
+    def test_accepts_folder_with_mixed_case_note_letters(self):
+        # Görlitz Pedal ranks name most notes lowercase ("036-c.wav") but the
+        # last couple of notes uppercase ("066-F#.wav") within the SAME
+        # folder - both must count as valid note files.
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            folder = root / "pipes/Pedal/01-AB_principalbas16"
+            folder.mkdir(parents=True)
+            lower_names = ["c", "c#", "d", "d#", "e", "f", "f#", "g", "g#", "a", "a#", "b"]
+            for note in range(36, 66):
+                (folder / f"{note:03d}-{lower_names[note % 12]}.wav").write_bytes(b"")
+            (folder / "066-F#.wav").write_bytes(b"")
+            (folder / "067-G.wav").write_bytes(b"")
+            # should not raise
+            _validate_rank_folder(root, "pipes/Pedal/01-AB_principalbas16", num_pipes=32, first_midi_note=36)
+
     def test_rejects_case_mismatched_folder_name(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

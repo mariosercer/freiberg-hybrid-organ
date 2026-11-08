@@ -62,7 +62,7 @@ def _validate_rank_folder(package_root: Path, folder: str, num_pipes: int, first
             raise ValueError(f"'{part}' (exact case) not found under {current}; available: {sorted(entries)}")
         current = current / part
 
-    strict_note_file = re.compile(r"^\d{3}-[A-G]#?\.wav$")
+    strict_note_file = re.compile(r"^\d{3}-[A-Ga-g]#?\.wav$")
     notes = sorted(
         int(p.name[:3]) for p in current.glob("*.wav") if strict_note_file.match(p.name)
     )
