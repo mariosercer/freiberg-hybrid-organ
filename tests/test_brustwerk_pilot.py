@@ -2,7 +2,7 @@ import re
 import unittest
 from pathlib import Path
 
-from src.codm.brustwerk_pilot import build_brustwerk_pilot
+from src.codm.brustwerk_pilot import build_brustwerk_pilot, build_brustwerk_division
 
 ZOBLITZ_ROOT = Path(
     "/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458"
@@ -121,6 +121,24 @@ class TestBrustwerkPilot(unittest.TestCase):
         )
         self.assertEqual(len(values), 9)
         self.assertTrue(all(v == "200" for v in values))
+
+
+    def test_build_brustwerk_division_uses_given_division_code(self):
+        # When Brustwerk is merged with the other 3 divisions (Task 5), it
+        # can no longer sit on DivisionCode 2 (GREAT) - that collides with
+        # Hauptwerk. build_brustwerk_division must accept the division
+        # code as a parameter and derive StopCodes from it, same formula
+        # as every other division module (2000 + (division_code-1)*100 + i).
+        division, ranks, stops, stopranks, packages = build_brustwerk_division(
+            ZOBLITZ_ROOT, division_code=4
+        )
+        self.assertEqual(division.division_code, 4)
+        stop_codes = [s.stop_code for s in stops]
+        self.assertEqual(len(stop_codes), 9)
+        for code in stop_codes:
+            self.assertTrue(2300 <= code <= 2399, f"StopCode {code} outside 2300-2399")
+        for r in ranks:
+            self.assertEqual(r.windchest_division_code, 4)
 
 
 if __name__ == "__main__":

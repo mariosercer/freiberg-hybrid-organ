@@ -74,9 +74,9 @@ def _validate_rank_folder(package_root: Path, folder: str, num_pipes: int, first
         )
 
 
-def build_brustwerk_pilot(zoblitz_root: Path) -> str:
+def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_CODE):
     division = Division(
-        division_code=DIVISION_CODE,
+        division_code=division_code,
         name="BRUSTWERK",
         short_name="Brustwerk",
         number_of_keys=NUM_PIPES,
@@ -88,7 +88,7 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
     stopranks = []
     for i, (name, folder, pitch_harmonic_num) in enumerate(BRUSTWERK_STOPS, start=1):
         rank_id = i
-        stop_code = 2000 + (DIVISION_CODE - 1) * 100 + i
+        stop_code = 2000 + (division_code - 1) * 100 + i
         main_folder = f"{folder}/lang/haupt"
         short_release_folder = f"{folder}/kurz/haupt"
 
@@ -106,7 +106,7 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
                 short_release_folder=short_release_folder,
                 short_release_max_ms=200,
                 pitch_harmonic_num=pitch_harmonic_num,
-                windchest_division_code=DIVISION_CODE,
+                windchest_division_code=division_code,
             )
         )
         stops.append(
@@ -121,6 +121,13 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
             )
         )
 
+    return division, ranks, stops, stopranks, REQUIRED_PACKAGES
+
+
+def build_brustwerk_pilot(zoblitz_root: Path) -> str:
+    division, ranks, stops, stopranks, required_packages = build_brustwerk_division(
+        zoblitz_root, division_code=DIVISION_CODE
+    )
     return render_custom_organ(
         organ_id=ORGAN_ID,
         name="Brustwerk Zoblitz Pilot",
@@ -128,7 +135,7 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
         stops=stops,
         ranks=ranks,
         stopranks=stopranks,
-        required_packages=REQUIRED_PACKAGES,
+        required_packages=required_packages,
     )
 
 

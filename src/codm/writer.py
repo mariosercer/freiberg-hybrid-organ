@@ -1,6 +1,6 @@
 from xml.sax.saxutils import escape
 
-from src.codm.model import Division, Rank, Stop, StopRank
+from src.codm.model import Coupler, Division, Rank, Stop, StopRank, Tremulant
 
 
 def _field(name, value):
@@ -241,9 +241,9 @@ def _rank_fields(r: Rank):
         ("Encl_FiltParamWhenOpenForPipeMIDINoteNum096_MinFreqHz", 0),
         ("Encl_MIDINoteNumOfFirstEnclosedPipeIfWholeRankNotEnclosed", 0),
         ("Encl_MIDINoteNumOfLastEnclosedPipeIfWholeRankNotEnclosed", 0),
-        ("Trem_TremulantCode", None),
-        ("Trem_SampleInstallationPackageID", None),
-        ("Trem_WaveformSampleFileFolder", None),
+        ("Trem_TremulantCode", r.trem_code),
+        ("Trem_SampleInstallationPackageID", r.trem_package_id),
+        ("Trem_WaveformSampleFileFolder", r.trem_waveform_folder),
         ("Trem_MIDINoteNumIncrementFromPipesToTremSamples", 0),
         ("Trem_MaxDepthRandomisationPct", 0),
         ("Trem_MIDINoteNumOfFirstTremmedPipeIfWholeRankNotTremmed", 0),
@@ -311,12 +311,97 @@ def _stoprank_fields(sr: StopRank):
     ]
 
 
-def render_custom_organ(organ_id, name, divisions, stops, ranks, stopranks, required_packages):
+def _coupler_fields(c: Coupler):
+    return [
+        ("CouplerCode", c.coupler_code),
+        ("Name", c.name),
+        ("CustomDisplay1_DisplayPageID", None),
+        ("CustomDisplay1_Text", None),
+        ("CustomDisplay1_ControlStyleID", None),
+        ("CustomDisplay1_PosPixels_X", 0),
+        ("CustomDisplay1_PosPixels_Y", 0),
+        ("CustomDisplay1_AlternateLayout1_ControlStyleID", None),
+        ("CustomDisplay1_AlternateLayout1_PosPixels_X", 0),
+        ("CustomDisplay1_AlternateLayout1_PosPixels_Y", 0),
+        ("CustomDisplay2_DisplayPageID", None),
+        ("CustomDisplay2_Text", None),
+        ("CustomDisplay2_ControlStyleID", None),
+        ("CustomDisplay2_PosPixels_X", 0),
+        ("CustomDisplay2_PosPixels_Y", 0),
+        ("CustomDisplay2_AlternateLayout1_ControlStyleID", None),
+        ("CustomDisplay2_AlternateLayout1_PosPixels_X", 0),
+        ("CustomDisplay2_AlternateLayout1_PosPixels_Y", 0),
+        ("DisplayName", c.display_name),
+        ("DefaultToEngaged", "N"),
+        ("SwitchIsLatching", "Y"),
+        ("StoreInDivisionalCombinations", "Y"),
+        ("StoreInGeneralCombinations", "Y"),
+        ("AccessibleForMIDIInputAndOutput", "Y"),
+        ("PercussiveEngagingSoundEffect_RankID", None),
+        ("PercussiveEngagingSoundEffect_MIDINoteNumber", 0),
+        ("PercussiveDisengagingSoundEffect_RankID", None),
+        ("PercussiveDisengagingSoundEffect_MIDINoteNumber", 0),
+        ("SustainingSoundEffect_RankID", None),
+        ("SustainingSoundEffect_MIDINoteNumber", 0),
+        ("OverrideSourceDivisionToSpecifiedDivisionCode", None),
+        ("OverrideDestDivisionToSpecifiedDivisionCode", None),
+        ("CoupleDestinationKeyboardRatherThanKeyAction", "N"),
+        ("CouplerCodeFromWhichToCopyState", None),
+        ("CustomCoupler_MIDINoteNumIncrementFromSourceToDest", 0),
+        ("CustomCoupler_KeyActionTypeCode", None),
+        ("CustomCoupler_KeyActionEffectCode", None),
+        ("CustomCoupler_PipeMIDINoteNum036_PizzOrReitPeriodMs", 0),
+        ("CustomCoupler_PipeMIDINoteNum096_PizzOrReitPeriodMs", 0),
+    ]
+
+
+def _tremulant_fields(t: Tremulant):
+    return [
+        ("TremulantCode", t.tremulant_code),
+        ("Name", t.name),
+        ("CustomDisplay1_DisplayPageID", None),
+        ("CustomDisplay1_Text", None),
+        ("CustomDisplay1_ControlStyleID", None),
+        ("CustomDisplay1_PosPixels_X", 0),
+        ("CustomDisplay1_PosPixels_Y", 0),
+        ("CustomDisplay1_AlternateLayout1_ControlStyleID", None),
+        ("CustomDisplay1_AlternateLayout1_PosPixels_X", 0),
+        ("CustomDisplay1_AlternateLayout1_PosPixels_Y", 0),
+        ("CustomDisplay2_DisplayPageID", None),
+        ("CustomDisplay2_Text", None),
+        ("CustomDisplay2_ControlStyleID", None),
+        ("CustomDisplay2_PosPixels_X", 0),
+        ("CustomDisplay2_PosPixels_Y", 0),
+        ("CustomDisplay2_AlternateLayout1_ControlStyleID", None),
+        ("CustomDisplay2_AlternateLayout1_PosPixels_X", 0),
+        ("CustomDisplay2_AlternateLayout1_PosPixels_Y", 0),
+        ("DisplayName", t.display_name),
+        ("DefaultToEngaged", "N"),
+        ("SwitchIsLatching", "Y"),
+        ("StoreInDivisionalCombinations", "Y"),
+        ("StoreInGeneralCombinations", "Y"),
+        ("AccessibleForMIDIInputAndOutput", "Y"),
+        ("PercussiveEngagingSoundEffect_RankID", None),
+        ("PercussiveEngagingSoundEffect_MIDINoteNumber", 0),
+        ("PercussiveDisengagingSoundEffect_RankID", None),
+        ("PercussiveDisengagingSoundEffect_MIDINoteNumber", 0),
+        ("SustainingSoundEffect_RankID", None),
+        ("SustainingSoundEffect_MIDINoteNumber", 0),
+        ("TremulantCodeFromWhichToCopyState", None),
+        ("FrequencyHz", 5.2),
+        ("MaxFrequencyRandomisationPct", 15),
+        ("MaxDepthRandomisationPct", 15),
+    ]
+
+
+def render_custom_organ(organ_id, name, divisions, stops, ranks, stopranks, required_packages,
+                         couplers=(), tremulants=()):
     parts = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<Hauptwerk FileFormat="CustomOrgan" FileFormatVersion="5.00">',
         _object_list("_general", "_general", [_general_fields(organ_id, name)]),
-        _empty_object_list("coupler"),
+        _object_list("coupler", "coupler", [_coupler_fields(c) for c in couplers]) if couplers
+        else _empty_object_list("coupler"),
         _empty_object_list("customdisplaycontrolstyle"),
         _empty_object_list("customdisplaykeyboardstyle"),
         _empty_object_list("customdisplaylabel"),
@@ -333,7 +418,8 @@ def render_custom_organ(organ_id, name, divisions, stops, ranks, stopranks, requ
         _empty_object_list("shortcutpiston"),
         _object_list("stop", "stop", [_stop_fields(s) for s in stops]),
         _object_list("stoprank", "stoprank", [_stoprank_fields(sr) for sr in stopranks]),
-        _empty_object_list("tremulant"),
+        _object_list("tremulant", "tremulant", [_tremulant_fields(t) for t in tremulants]) if tremulants
+        else _empty_object_list("tremulant"),
         "</Hauptwerk>",
     ]
     return "\n".join(parts) + "\n"

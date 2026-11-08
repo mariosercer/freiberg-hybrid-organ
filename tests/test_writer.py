@@ -2,7 +2,7 @@ import re
 import unittest
 from pathlib import Path
 
-from src.codm.model import Rank
+from src.codm.model import Coupler, Rank, Tremulant
 from src.codm.writer import render_custom_organ
 
 ZOBLITZ_PACKAGE_458 = Path(
@@ -82,6 +82,28 @@ class TestWriter(unittest.TestCase):
             "<Samples_MaxNoteTimeMsForShortNoteReleaseSamplesIfAny>200"
             "</Samples_MaxNoteTimeMsForShortNoteReleaseSamplesIfAny>",
             xml,
+        )
+
+    def test_render_includes_given_couplers_and_tremulants(self):
+        coupler = Coupler(coupler_code=1111, name="Coupler: Sw to Gt", display_name="SW TO GT")
+        tremulant = Tremulant(tremulant_code=1720, name="Tremulant: Oberwerk", display_name="TREMULANT")
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
+                                   ranks=[], stopranks=[], required_packages=[],
+                                   couplers=[coupler], tremulants=[tremulant])
+        self.assertIn("<CouplerCode>1111</CouplerCode>", xml)
+        self.assertIn("<TremulantCode>1720</TremulantCode>", xml)
+
+    def test_render_rank_with_tremulant_waveform_fields(self):
+        rank = Rank(rank_id=1, name="Octava 2'", num_pipes=58, first_midi_note=36,
+                    package_id=1812, main_folder="pipes/OW/01-AB_octava4",
+                    short_release_folder=None, pitch_harmonic_num=16, windchest_division_code=3,
+                    trem_code=1720, trem_package_id=1812, trem_waveform_folder="pipes/OW/01-AB_octava4/trem")
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
+                                   ranks=[rank], stopranks=[], required_packages=[])
+        self.assertIn("<Trem_TremulantCode>1720</Trem_TremulantCode>", xml)
+        self.assertIn("<Trem_SampleInstallationPackageID>1812</Trem_SampleInstallationPackageID>", xml)
+        self.assertIn(
+            "<Trem_WaveformSampleFileFolder>pipes/OW/01-AB_octava4/trem</Trem_WaveformSampleFileFolder>", xml
         )
 
     def test_rendered_sample_folder_matches_case_sensitive_folder_on_disk(self):

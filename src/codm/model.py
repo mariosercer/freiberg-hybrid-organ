@@ -18,6 +18,9 @@ class Rank:
     medium_release_folder: str | None = None
     medium_release_max_ms: int = 0
     rel_release_folder: str | None = None
+    trem_code: int | None = None
+    trem_package_id: int | None = None
+    trem_waveform_folder: str | None = None
 
 
 @dataclass
@@ -33,6 +36,20 @@ class StopRank:
     rank_id: int
     first_mapped_key: int
     num_mapped_keys: int
+
+
+@dataclass
+class Coupler:
+    coupler_code: int
+    name: str
+    display_name: str
+
+
+@dataclass
+class Tremulant:
+    tremulant_code: int
+    name: str
+    display_name: str
 
 
 @dataclass
