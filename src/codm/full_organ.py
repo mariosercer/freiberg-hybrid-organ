@@ -144,8 +144,8 @@ COUPLERS = [
 # none: Görlitz's own real Hauptwerk division has no tremulant waveform
 # samples at all (confirmed on disk), matching normal Baroque practice
 # where the main principal chorus is not tremulated.
-TREMULANT_OBERWERK = Tremulant(tremulant_code=1720, name="Tremulant: Oberwerk", display_name="TREMULANT")
-TREMULANT_BRUSTWERK = Tremulant(tremulant_code=1730, name="Tremulant: Brustwerk", display_name="TREMULANT")
+TREMULANT_OBERWERK = Tremulant(tremulant_code=1720, name="Tremulant: Oberwerk", display_name="TREM-OW")
+TREMULANT_BRUSTWERK = Tremulant(tremulant_code=1730, name="Tremulant: Brustwerk", display_name="TREM-BW")
 TREMULANTS = [TREMULANT_OBERWERK, TREMULANT_BRUSTWERK]
 
 # Oberwerk ranks with confirmed native tremulant-waveform folders on disk

@@ -2,6 +2,8 @@ import unittest
 
 from src.codm.console_layout import (
     KNOB_SIZE,
+    MANUAL_KEYBOARD_HEIGHT,
+    PEDAL_KEYBOARD_HEIGHT,
     console_size,
     layout_controls,
     layout_keyboard_anchors,
@@ -42,10 +44,22 @@ class TestConsoleLayout(unittest.TestCase):
     def test_layout_keyboard_anchors_stacked_without_overlapping_controls(self):
         anchors = layout_keyboard_anchors(controls_bottom_y=500)
         self.assertEqual(set(anchors.keys()), {1, 2, 3, 4})
-        ys = sorted(y for x, y in anchors.values())
-        # strictly increasing - each keyboard below the previous, all below controls
-        self.assertTrue(all(y >= 500 for y in ys))
-        self.assertEqual(len(set(ys)), 4)
+
+        def height_of(division_code):
+            return PEDAL_KEYBOARD_HEIGHT if division_code == 1 else MANUAL_KEYBOARD_HEIGHT
+
+        ordered = sorted(anchors.items(), key=lambda kv: kv[1][1])
+        self.assertGreaterEqual(
+            ordered[0][1][1], 500, "topmost keyboard overlaps the controls above it"
+        )
+        for (div_a, (_, y_a)), (div_b, (_, y_b)) in zip(ordered, ordered[1:]):
+            # real bounding-box check: the next keyboard's top must be at or
+            # below the previous keyboard's own bottom edge (its real style
+            # height), not just "a different y value".
+            self.assertGreaterEqual(
+                y_b, y_a + height_of(div_a),
+                f"division {div_a} keyboard (height {height_of(div_a)}) overlaps division {div_b} keyboard",
+            )
 
     def test_console_size_covers_every_element(self):
         divisions = [

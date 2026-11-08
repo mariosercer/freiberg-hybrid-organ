@@ -2,7 +2,13 @@ import re
 import unittest
 from pathlib import Path
 
-from src.codm.console_layout import console_size
+from src.codm.console_layout import (
+    MANUAL_KEYBOARD_HEIGHT,
+    KNOB_SIZE,
+    PEDAL_KEYBOARD_HEIGHT,
+    console_size,
+    natural_key_count,
+)
 from src.codm.full_organ import build_full_organ
 from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.model import Division
@@ -160,6 +166,32 @@ class TestFullOrgan(unittest.TestCase):
             declared_height, expected_height,
             "declared console height smaller than the actual laid-out content",
         )
+
+        # Independent of console_size (which is the module under test for the
+        # two assertions above): every single knob and keyboard must fit
+        # inside the declared canvas on its own, using sizes read from the
+        # real copied styles, not re-derived from console_layout.
+        for code, (x, y) in control_positions.items():
+            self.assertLessEqual(x + KNOB_SIZE, declared_width, f"{code} knob right edge exceeds console width")
+            self.assertLessEqual(y + KNOB_SIZE, declared_height, f"{code} knob bottom edge exceeds console height")
+
+        for d in divisions:
+            x, y = keyboard_anchors[d.division_code]
+            naturals = natural_key_count(d.first_key_midi_note, d.number_of_keys)
+            if d.division_code == 1:
+                width, height = naturals * 24, PEDAL_KEYBOARD_HEIGHT
+            else:
+                width, height = naturals * 12, MANUAL_KEYBOARD_HEIGHT
+            self.assertLessEqual(x + width, declared_width, f"division {d.division_code} keyboard exceeds console width")
+            self.assertLessEqual(y + height, declared_height, f"division {d.division_code} keyboard exceeds console height")
+
+    def test_oberwerk_and_brustwerk_tremulant_knobs_are_distinguishable(self):
+        xml = build_full_organ()
+        tremulant_block = re.search(r'<ObjectList ObjectType="tremulant">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+        texts = re.findall(r"<CustomDisplay1_Text>(.*?)</CustomDisplay1_Text>", tremulant_block)
+        self.assertEqual(len(texts), 2)
+        self.assertNotEqual(texts[0], texts[1], "both tremulant knobs show the same label on the console")
+        self.assertTrue(all(t for t in texts), "a tremulant knob has an empty label")
 
 
 if __name__ == "__main__":
