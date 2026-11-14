@@ -30,6 +30,14 @@ class TestModel(unittest.TestCase):
         self.assertEqual(d.division_code, 3)
         self.assertEqual(d.number_of_keys, 56)
 
+    def test_division_short_name_rejects_more_than_5_chars(self):
+        # Hauptwerk refuses to load a division whose ShortName exceeds 5 chars.
+        with self.assertRaises(ValueError):
+            Division(division_code=2, name="HAUPTWERK", short_name="Hauptwerk",
+                     number_of_keys=58, first_key_midi_note=36)
+        Division(division_code=1, name="PEDAL", short_name="Pedal",
+                 number_of_keys=32, first_key_midi_note=36)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -92,7 +92,7 @@ def build_brustwerk_division(zoblitz_root: Path, division_code: int = DIVISION_C
     division = Division(
         division_code=division_code,
         name="BRUSTWERK",
-        short_name="Brustwerk",
+        short_name="BW",
         number_of_keys=NUM_PIPES,
         first_key_midi_note=FIRST_MIDI_NOTE,
     )

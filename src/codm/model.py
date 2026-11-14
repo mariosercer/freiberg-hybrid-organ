@@ -76,6 +76,17 @@ class Division:
     keyboard_pos_x: int = 0
     keyboard_pos_y: int = 0
 
+    # Hauptwerk's Custom Organ loader rejects a division ShortName longer
+    # than 5 characters (its own examples use Pedal/Great/Swell/Noise).
+    MAX_SHORT_NAME_LEN = 5
+
+    def __post_init__(self):
+        if not self.short_name or len(self.short_name) > self.MAX_SHORT_NAME_LEN:
+            raise ValueError(
+                f"Division {self.name!r}: short_name {self.short_name!r} must be "
+                f"1-{self.MAX_SHORT_NAME_LEN} characters (Hauptwerk limit)"
+            )
+
 
 @dataclass
 class ControlStyle:

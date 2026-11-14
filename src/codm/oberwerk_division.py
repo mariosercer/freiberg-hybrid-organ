@@ -70,7 +70,7 @@ def build_oberwerk_division(goerlitz_extract_root: Path, wasselonne_root: Path, 
     division = Division(
         division_code=DIVISION_CODE,
         name="OBERWERK",
-        short_name="Oberwerk",
+        short_name="OW",
         number_of_keys=NUM_PIPES,
         first_key_midi_note=FIRST_MIDI_NOTE,
     )

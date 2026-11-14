@@ -83,7 +83,7 @@ def build_hauptwerk_division(goerlitz_extract_root: Path, waltershausen_root: Pa
     division = Division(
         division_code=DIVISION_CODE,
         name="HAUPTWERK",
-        short_name="Hauptwerk",
+        short_name="HW",
         number_of_keys=NUM_PIPES,
         first_key_midi_note=FIRST_MIDI_NOTE,
     )
