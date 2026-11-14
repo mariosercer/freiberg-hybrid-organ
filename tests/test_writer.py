@@ -28,6 +28,15 @@ class TestWriter(unittest.TestCase):
         )
         self.assertEqual(xml.count("WindSupply_DivisionCodeOfWindchest>2<"), 1)
 
+    def test_required_package_short_name_capped_at_32_chars(self):
+        # Hauptwerk error 0806: RequiredInstallationPackage ShortName > 32 chars.
+        pkg = (255, "OrganART 1730 Trost Package-000255-PatchV3.2", 15, "OrganArt Media", None)
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=[],
+                                   ranks=[], stopranks=[], required_packages=[pkg])
+        short_names = re.findall(r"<ShortName>([^<]*)</ShortName>", xml)
+        self.assertIn("OrganART1730TrostPackage000255Pa", short_names)
+        self.assertTrue(all(len(s) <= 32 for s in short_names))
+
     def test_render_escapes_the_four_xml_special_characters_in_names(self):
         rank = Rank(rank_id=1, name='A & B <C> "D"', num_pipes=56, first_midi_note=36,
                     package_id=458, main_folder="x", short_release_folder=None,

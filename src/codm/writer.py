@@ -41,8 +41,11 @@ def _empty_object_list(object_type):
     return f'<ObjectList ObjectType="{object_type}">\n</ObjectList>'
 
 
+SHORT_NAME_MAX_LEN = 32
+
+
 def _general_fields(organ_id, name, console_width=0, console_height=0, default_display_page_id=None):
-    short_name = name[:32]
+    short_name = name[:SHORT_NAME_MAX_LEN]
     filename = "".join(c for c in name if c.isalnum())
     return [
         ("UniqueOrganID", organ_id),
@@ -125,7 +128,9 @@ def _general_fields(organ_id, name, console_width=0, console_height=0, default_d
 
 def _required_package_fields(pkg):
     pkg_id, name, supplier_id, supplier_name, min_version = pkg
-    short_name = "".join(c for c in name if c.isalnum())
+    # Hauptwerk rejects a RequiredInstallationPackage ShortName over 32 chars
+    # (message code 0806), e.g. "OrganART1730TrostPackage000255PatchV32".
+    short_name = "".join(c for c in name if c.isalnum())[:SHORT_NAME_MAX_LEN]
     return [
         ("InstallationPackageID", pkg_id),
         ("Name", name),
