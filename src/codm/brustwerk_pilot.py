@@ -156,14 +156,10 @@ def build_brustwerk_pilot(zoblitz_root: Path) -> str:
 
 
 def main():
-    zoblitz_root = Path(
-        "/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458"
-    )
-    xml = build_brustwerk_pilot(zoblitz_root)
-    out_path = Path(
-        "/Users/pilepale/Hauptwerk/HauptwerkUserData/CustomOrganDefinitions/"
-        "BrustwerkZoblitzPilot.CustomOrgan_Hauptwerk_xml"
-    )
+    from src.codm.local_paths import custom_organ_definitions_dir, zoblitz_root
+
+    xml = build_brustwerk_pilot(zoblitz_root())
+    out_path = custom_organ_definitions_dir() / "BrustwerkZoblitzPilot.CustomOrgan_Hauptwerk_xml"
     out_path.write_text(xml, encoding="utf-8")
     print(f"Written: {out_path}")
 

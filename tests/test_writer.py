@@ -3,11 +3,10 @@ import unittest
 from pathlib import Path
 
 from src.codm.model import Coupler, Rank, Tremulant
+from src.codm.local_paths import zoblitz_root
 from src.codm.writer import render_custom_organ
 
-ZOBLITZ_PACKAGE_458 = Path(
-    "/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458"
-)
+ZOBLITZ_PACKAGE_458 = zoblitz_root()
 
 
 class TestWriter(unittest.TestCase):

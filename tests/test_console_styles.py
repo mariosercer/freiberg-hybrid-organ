@@ -8,9 +8,10 @@ from src.codm.full_organ import (
     CONSOLE_KEYBOARD_STYLE_MANUAL,
     CONSOLE_KEYBOARD_STYLE_PEDAL,
 )
+from src.codm.local_paths import custom_organ_definitions_dir
 from src.codm.writer import render_custom_organ
 
-HAUPTWERK_EXAMPLES_DIR = Path("/Users/pilepale/Hauptwerk/HauptwerkUserData/CustomOrganDefinitions")
+HAUPTWERK_EXAMPLES_DIR = custom_organ_definitions_dir()
 EXAMPLE2 = HAUPTWERK_EXAMPLES_DIR / "ExampleCustomOrgan2.CustomOrgan_Hauptwerk_xml"
 EXAMPLE4 = HAUPTWERK_EXAMPLES_DIR / "ExampleCustomOrgan4-StAnnes-WithBasicGUIConsole.CustomOrgan_Hauptwerk_xml"
 

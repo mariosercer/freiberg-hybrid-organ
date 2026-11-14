@@ -3,10 +3,9 @@ import unittest
 from pathlib import Path
 
 from src.codm.brustwerk_pilot import build_brustwerk_pilot, build_brustwerk_division
+from src.codm.local_paths import zoblitz_root
 
-ZOBLITZ_ROOT = Path(
-    "/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458"
-)
+ZOBLITZ_ROOT = zoblitz_root()
 
 
 class TestBrustwerkPilot(unittest.TestCase):

@@ -4,11 +4,10 @@ from pathlib import Path
 
 from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.hauptwerk_division import build_hauptwerk_division
+from src.codm.local_paths import waltershausen_root
 
 GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
-WALTERSHAUSEN_ROOT = Path(
-    "/Volumes/Samsung T7/Orgulje/Trost Waltershausen/OrganInstallationPackages"
-)
+WALTERSHAUSEN_ROOT = waltershausen_root()
 
 
 @unittest.skipUnless(GOERLITZ_EXTRACT_ROOT.is_dir(), "Görlitz scratch extraction not present")

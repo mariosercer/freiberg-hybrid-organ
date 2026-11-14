@@ -2,12 +2,11 @@ import unittest
 from pathlib import Path
 
 from src.codm.goerlitz_paths import default_goerlitz_extract_root
+from src.codm.local_paths import wasselonne_root
 from src.codm.oberwerk_division import build_oberwerk_division
 
 GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
-WASSELONNE_ROOT = Path(
-    "/Volumes/Samsung T7/Orgulje/Silbermann Wasselonne/OrganInstallationPackages/000802"
-)
+WASSELONNE_ROOT = wasselonne_root()
 
 
 @unittest.skipUnless(GOERLITZ_EXTRACT_ROOT.is_dir(), "Görlitz scratch extraction not present")

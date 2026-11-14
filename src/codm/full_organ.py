@@ -6,6 +6,7 @@ from src.codm.brustwerk_pilot import build_brustwerk_division
 from src.codm.console_layout import console_size, controls_bottom_y, layout_controls, layout_keyboard_anchors
 from src.codm.goerlitz_paths import default_goerlitz_extract_root
 from src.codm.hauptwerk_division import build_hauptwerk_division
+from src.codm.local_paths import custom_organ_definitions_dir, waltershausen_root, wasselonne_root, zoblitz_root
 from src.codm.model import ControlStyle, Coupler, DisplayPage, KeyboardStyle, Tremulant
 from src.codm.oberwerk_division import build_oberwerk_division
 from src.codm.pedal_division import build_pedal_division
@@ -14,9 +15,9 @@ from src.codm.writer import render_custom_organ
 ORGAN_ID = 800200
 
 GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
-WALTERSHAUSEN_ROOT = Path("/Volumes/Samsung T7/Orgulje/Trost Waltershausen/OrganInstallationPackages")
-WASSELONNE_ROOT = Path("/Volumes/Samsung T7/Orgulje/Silbermann Wasselonne/OrganInstallationPackages/000802")
-ZOBLITZ_ROOT = Path("/Volumes/Samsung T7/Orgulje/Stadtkirche Zoeblitz/OrganInstallationPackages/000458")
+WALTERSHAUSEN_ROOT = waltershausen_root()
+WASSELONNE_ROOT = wasselonne_root()
+ZOBLITZ_ROOT = zoblitz_root()
 
 DIVISION_CODE_BRUSTWERK = 4
 
@@ -281,10 +282,7 @@ def _wire_console_graphics(divisions, stops, couplers, tremulants):
 
 def main():
     xml = build_full_organ()
-    out_path = Path(
-        "/Users/pilepale/Hauptwerk/HauptwerkUserData/CustomOrganDefinitions/"
-        "FreibergHybrid.CustomOrgan_Hauptwerk_xml"
-    )
+    out_path = custom_organ_definitions_dir() / "FreibergHybrid.CustomOrgan_Hauptwerk_xml"
     out_path.write_text(xml, encoding="utf-8")
     print(f"Written: {out_path}")
 
