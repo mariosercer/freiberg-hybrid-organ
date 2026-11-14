@@ -10,6 +10,10 @@ KNOB_STEP = 70  # knob size + 5px gap
 MAX_PER_ROW = 12
 MARGIN_LEFT = 20
 MARGIN_TOP = 20
+# Hauptwerk rejects a custom console narrower than 1016 px (message code
+# 5625); its own GUI examples (ExampleCustomOrgan2/4/5/6) use 1016x640.
+MIN_CONSOLE_WIDTH = 1016
+MIN_CONSOLE_HEIGHT = 640
 
 # Divisions, in the order their knob rows stack top-to-bottom (my call,
 # documented in the plan: Pedal, Oberwerk, Hauptwerk, Brustwerk).
@@ -105,4 +109,5 @@ def console_size(control_positions: dict, keyboard_anchors: dict, divisions) -> 
         max_x = max(max_x, x + width)
         max_y = max(max_y, y + height)
 
-    return max_x + MARGIN_LEFT, max_y + MARGIN_TOP
+    return (max(max_x + MARGIN_LEFT, MIN_CONSOLE_WIDTH),
+            max(max_y + MARGIN_TOP, MIN_CONSOLE_HEIGHT))

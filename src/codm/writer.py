@@ -126,11 +126,18 @@ def _general_fields(organ_id, name, console_width=0, console_height=0, default_d
     ]
 
 
-def _required_package_fields(pkg):
+def _required_package_fields(pkg, name_is_shared=False):
     pkg_id, name, supplier_id, supplier_name, min_version = pkg
     # Hauptwerk rejects a RequiredInstallationPackage ShortName over 32 chars
     # (message code 0806), e.g. "OrganART1730TrostPackage000255PatchV32".
-    short_name = "".join(c for c in name if c.isalnum())[:SHORT_NAME_MAX_LEN]
+    short_name = "".join(c for c in name if c.isalnum())
+    if name_is_shared:
+        # Görlitz 001812-001814 all carry the vendor name "...Surround - Pipes";
+        # Hauptwerk wants unique object names, so tag duplicates with the ID.
+        suffix = f"{pkg_id:06d}"
+        name = f"{name} ({suffix})"
+        short_name = short_name[:SHORT_NAME_MAX_LEN - len(suffix)] + suffix
+    short_name = short_name[:SHORT_NAME_MAX_LEN]
     return [
         ("InstallationPackageID", pkg_id),
         ("Name", name),
@@ -188,11 +195,13 @@ def _division_fields(d: Division):
         ("NumberOfKeyActionNodesIfDifferentFromNumberOfKeys", 0),
         ("MIDINoteNumOfFirstKeyActionNodeIfDifferentFromFirstKey", 0),
         ("AccessibleForMIDIInputAndOutput", "Y"),
+        # Wind model disabled: Hauptwerk requires its parameters to be 0
+        # (message code 5603), as in ExampleCustomOrgan6's NOISES division.
         ("WindModel_EnableWindModel", "N"),
-        ("WindModel_TotalResrvrAndWndchstVolMetresCubed", 2),
-        ("WindModel_AreaOfReservoirTableMetresSquared", 1.8),
-        ("WindModel_ResrvrBellowsPositiveDampingCoeff", 25),
-        ("WindModel_WindchestPressureDropPctAtMaxLoad", 2),
+        ("WindModel_TotalResrvrAndWndchstVolMetresCubed", 0),
+        ("WindModel_AreaOfReservoirTableMetresSquared", 0),
+        ("WindModel_ResrvrBellowsPositiveDampingCoeff", 0),
+        ("WindModel_WindchestPressureDropPctAtMaxLoad", 0),
         ("PercussiveEngagingKeyActionNoise_RankID", None),
         ("PercussiveEngagingKeyActionNoise_ChooseMIDINoteNumRandomly", "N"),
         ("PercussiveDisengagingKeyActionNoise_RankID", None),
@@ -309,9 +318,28 @@ def _stop_fields(s: Stop):
     ]
 
 
-def _stoprank_fields(sr: StopRank):
+def _stoprank_names(stops, ranks, stopranks):
+    """Hauptwerk requires a non-empty StopRank Name (message code 0801).
+    Like its own examples, use the stop's name; a stop driving several
+    ranks (e.g. Untersatz 32'+16') uses each rank's name instead, to tell
+    them apart while staying within the examples' max length (31 chars)."""
+    stop_names = {s.stop_code: s.name for s in stops}
+    rank_names = {r.rank_id: r.name for r in ranks}
+    ranks_per_stop = {}
+    for sr in stopranks:
+        ranks_per_stop[sr.stop_code] = ranks_per_stop.get(sr.stop_code, 0) + 1
+    names = []
+    for sr in stopranks:
+        name = stop_names.get(sr.stop_code, f"Stop {sr.stop_code}")
+        if ranks_per_stop[sr.stop_code] > 1:
+            name = rank_names.get(sr.rank_id, f"{name} rank {sr.rank_id}")
+        names.append(name)
+    return names
+
+
+def _stoprank_fields(sr: StopRank, name: str):
     return [
-        ("Name", None),
+        ("Name", name),
         ("StopCode", sr.stop_code),
         ("RankTypeCode", 1),
         ("RankID", sr.rank_id),
@@ -552,11 +580,15 @@ def render_custom_organ(organ_id, name, divisions, stops, ranks, stopranks, requ
         _object_list(
             "requiredinstallationpackage",
             "requiredinstallationpackage",
-            [_required_package_fields(p) for p in required_packages],
+            [_required_package_fields(p, [q[1] for q in required_packages].count(p[1]) > 1)
+             for p in required_packages],
         ),
         _empty_object_list("shortcutpiston"),
         _object_list("stop", "stop", [_stop_fields(s) for s in stops]),
-        _object_list("stoprank", "stoprank", [_stoprank_fields(sr) for sr in stopranks]),
+        _object_list("stoprank", "stoprank", [
+            _stoprank_fields(sr, n)
+            for sr, n in zip(stopranks, _stoprank_names(stops, ranks, stopranks))
+        ]),
         _object_list("tremulant", "tremulant", [_tremulant_fields(t) for t in tremulants]) if tremulants
         else _empty_object_list("tremulant"),
         "</Hauptwerk>",

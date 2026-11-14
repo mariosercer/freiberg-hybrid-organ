@@ -3,6 +3,8 @@ import unittest
 from src.codm.console_layout import (
     KNOB_SIZE,
     MANUAL_KEYBOARD_HEIGHT,
+    MIN_CONSOLE_HEIGHT,
+    MIN_CONSOLE_WIDTH,
     PEDAL_KEYBOARD_HEIGHT,
     console_size,
     layout_controls,
@@ -73,6 +75,12 @@ class TestConsoleLayout(unittest.TestCase):
         width, height = console_size(control_positions, keyboard_anchors, divisions)
         self.assertGreaterEqual(width, 900 + KNOB_SIZE)
         self.assertGreaterEqual(height, 900 + 70)  # pedal keyboard height ~70px
+
+    def test_console_size_never_below_hauptwerk_minimum(self):
+        # Hauptwerk error 5625: console width must be at least 1016 px.
+        width, height = console_size({"stop:2001": (20, 20)}, {}, [])
+        self.assertEqual((width, height), (MIN_CONSOLE_WIDTH, MIN_CONSOLE_HEIGHT))
+        self.assertEqual(MIN_CONSOLE_WIDTH, 1016)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import re
 import unittest
 from pathlib import Path
 
-from src.codm.model import Coupler, Rank, Tremulant
+from src.codm.model import Coupler, Division, Rank, Stop, StopRank, Tremulant
 from src.codm.local_paths import zoblitz_root
 from src.codm.writer import render_custom_organ
 
@@ -27,6 +27,34 @@ class TestWriter(unittest.TestCase):
             xml,
         )
         self.assertEqual(xml.count("WindSupply_DivisionCodeOfWindchest>2<"), 1)
+
+    def test_disabled_wind_model_has_zero_parameters(self):
+        # Hauptwerk error 5603: wind model params only if the wind model is enabled.
+        d = Division(division_code=1, name="PEDAL", short_name="Pedal",
+                     number_of_keys=32, first_key_midi_note=36)
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[d], stops=[],
+                                   ranks=[], stopranks=[], required_packages=[])
+        self.assertIn("<WindModel_EnableWindModel>N</WindModel_EnableWindModel>", xml)
+        params = re.findall(r"<WindModel_(?!EnableWindModel)\w+>([^<]*)</", xml)
+        self.assertEqual(params, ["0", "0", "0", "0"])
+
+    def test_every_stoprank_has_a_name(self):
+        # Hauptwerk error 0801: StopRank 'Name' is mandatory.
+        def rank(rid, name):
+            return Rank(rank_id=rid, name=name, num_pipes=32, first_midi_note=36,
+                        package_id=1811, main_folder="x", short_release_folder="x",
+                        pitch_harmonic_num=8, windchest_division_code=1)
+        stops = [Stop(stop_code=1001, name="Subbass 16'", display_name="SUBBASS 16"),
+                 Stop(stop_code=1002, name="Untersatz 32'+16'", display_name="UNTERSATZ")]
+        ranks = [rank(1, "Subbass 16'"), rank(2, "Gross Principal-Bass 32'"), rank(3, "Contra-Bass 16'")]
+        stopranks = [StopRank(stop_code=1001, rank_id=1, first_mapped_key=36, num_mapped_keys=32),
+                     StopRank(stop_code=1002, rank_id=2, first_mapped_key=36, num_mapped_keys=32),
+                     StopRank(stop_code=1002, rank_id=3, first_mapped_key=36, num_mapped_keys=32)]
+        xml = render_custom_organ(organ_id=800100, name="Test", divisions=[], stops=stops,
+                                   ranks=ranks, stopranks=stopranks, required_packages=[])
+        block = re.search(r'<ObjectList ObjectType="stoprank">(.*?)</ObjectList>', xml, re.DOTALL).group(1)
+        names = re.findall(r"<Name>([^<]*)</Name>", block)
+        self.assertEqual(names, ["Subbass 16'", "Gross Principal-Bass 32'", "Contra-Bass 16'"])
 
     def test_required_package_short_name_capped_at_32_chars(self):
         # Hauptwerk error 0806: RequiredInstallationPackage ShortName > 32 chars.

@@ -191,6 +191,18 @@ def _wire_brustwerk_tremulant(ranks):
             r.trem_waveform_folder = folder
 
 
+def _prefix_names_with_division(division, ranks, stops):
+    """Hauptwerk requires Rank (and Stop) Names to be unique across the whole
+    organ (message code 0886); the same stop name occurs in several divisions
+    (e.g. Principal 8' in HW and OW). Prefix with the division ShortName,
+    as Hauptwerk's own examples do ("Sw Lieblich Gedact 8"). The knob label
+    (display_name) is unchanged."""
+    for r in ranks:
+        r.name = f"{division.short_name} {r.name}"
+    for s in stops:
+        s.name = f"{division.short_name} {s.name}"
+
+
 def _dedupe_packages(packages):
     seen = {}
     for p in packages:
@@ -222,6 +234,11 @@ def build_full_organ() -> str:
 
     _wire_oberwerk_tremulant(ow_ranks)
     _wire_brustwerk_tremulant(bw_ranks)
+
+    # After tremulant wiring (it matches ranks by their bare name).
+    for d, d_ranks, d_stops in [(ped_division, ped_ranks, ped_stops), (hw_division, hw_ranks, hw_stops),
+                                 (ow_division, ow_ranks, ow_stops), (bw_division, bw_ranks, bw_stops)]:
+        _prefix_names_with_division(d, d_ranks, d_stops)
 
     divisions = [ped_division, hw_division, ow_division, bw_division]
     ranks = ped_ranks + hw_ranks + ow_ranks + bw_ranks

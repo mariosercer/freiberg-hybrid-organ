@@ -18,6 +18,17 @@ GOERLITZ_EXTRACT_ROOT = default_goerlitz_extract_root()
 
 @unittest.skipUnless(GOERLITZ_EXTRACT_ROOT.is_dir(), "Görlitz scratch extraction not present")
 class TestFullOrgan(unittest.TestCase):
+    def test_object_names_unique_within_each_object_type(self):
+        # Hauptwerk error 0886: e.g. two Rank objects named "Principal 8'".
+        import xml.etree.ElementTree as ET
+        from collections import Counter
+        root = ET.fromstring(build_full_organ().encode("utf-8"))
+        for ol in root.iter("ObjectList"):
+            for field in ("Name", "ShortName"):
+                values = [o.findtext(field) for o in ol if o.find(field) is not None]
+                dupes = {v: n for v, n in Counter(values).items() if n > 1}
+                self.assertEqual(dupes, {}, f"duplicate {field} in {ol.get('ObjectType')}")
+
     def test_build_full_organ_has_44_stops_no_division_or_stopcode_overlap(self):
         xml = build_full_organ()
 
